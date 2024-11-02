@@ -16,10 +16,26 @@ const editarSolicitud = (id) => {
   router.push({ name: 'solicitud-editar', params: { id } })
 }
 
-const eliminarSolicitud = (id) => {
-  if (confirm('¿Estás seguro de que deseas eliminar esta solicitud?')) {
-    // Lógica para eliminar la solicitud (puedes implementar esto más adelante)
-    alert(`Solicitud con ID ${id} eliminada`)
+const eliminarSolicitud = async (id) => {
+  const confirmDelete = confirm('¿Estás seguro de que deseas eliminar esta solicitud?')
+  if (confirmDelete) {
+    try {
+      const response = await axios.delete(
+        'http://localhost/manejo_actas/index.php?accion=eliminar_solicitud',
+        {
+          data: {
+            idSolicitud: id
+          }
+        }
+      )
+      alert(response.data.message) // Muestra el mensaje de respuesta del servidor
+
+      // Actualiza la lista de solicitudes después de eliminar
+      solicitudes.value = solicitudes.value.filter((solicitud) => solicitud.IDSOLICITUD !== id)
+    } catch (error) {
+      console.error('Error al eliminar la solicitud:', error)
+      alert('Ocurrió un error al eliminar la solicitud.')
+    }
   }
 }
 

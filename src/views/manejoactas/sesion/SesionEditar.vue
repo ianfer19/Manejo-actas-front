@@ -13,6 +13,7 @@ const secretario = ref('')
 const contenido = ref('')
 const tema = ref('')
 const miembrosInvitados = ref([]) // Estado para los miembros invitados
+const miembros = ref([]) // Estado para los miembros (invitados)
 
 // Implementar la lógica para cargar la sesión por ID
 const loadSesion = async () => {
@@ -40,6 +41,9 @@ const loadSesion = async () => {
 
     // Cargar miembros invitados
     await loadMiembrosInvitados(idSesion)
+
+    // Cargar invitados
+    await loadInvitados(idSesion)
   } catch (error) {
     console.error('Error al cargar la sesión:', error)
     alert('No se pudo cargar la sesión')
@@ -91,6 +95,22 @@ const loadMiembrosInvitados = async (idSesion) => {
   }
 }
 
+// Nueva función para cargar los invitados
+const loadInvitados = async (idSesion) => {
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=obtener_asistencia_invitados_por_sesion&idSesion=${idSesion}`
+    )
+
+    if (!response.ok) throw new Error('Error al cargar los invitados')
+
+    const data = await response.json()
+    miembros.value = data // Asignar los datos de invitados al estado
+  } catch (error) {
+    console.error('Error al cargar los invitados:', error)
+  }
+}
+
 // Nueva función para invitar a los miembros
 const invitarMiembros = async () => {
   const idSesion = route.params.id
@@ -110,8 +130,6 @@ const invitarMiembros = async () => {
       }
     )
 
-    console.log(response)
-
     if (!response.ok) throw new Error('Error al invitar a los miembros')
 
     const result = await response.json()
@@ -123,78 +141,42 @@ const invitarMiembros = async () => {
   }
 }
 
-const editarSesion = async () => {
-  const id = route.params.id
-  const dataSesion = {
-    idSesion: id,
-    lugar: lugar.value,
-    fecha: fecha.value,
-    horaInicio: horaInicio.value,
-    horaFinal: horaFinal.value,
-    presidente: presidente.value,
-    secretario: secretario.value
-  }
-
-  // Primero, actualizamos o creamos el contenido de la sesión
-  await saveContenidoSesion(id, tema.value, contenido.value)
-
-  // Luego, actualizamos la sesión
-  await updateSesion(dataSesion)
-}
-
-const saveContenidoSesion = async (idSesion, tema, contenido) => {
-  const dataContenido = {
-    sesionId: idSesion,
-    tema: tema,
-    descripcion: contenido
+// Nueva función para invitar a los invitados
+const invitarInvitados = async () => {
+  const idSesion = route.params.id
+  const dataInvitacion = {
+    idSesion: idSesion
   }
 
   try {
     const response = await fetch(
-      'http://localhost/manejo_actas/index.php?accion=definir_contenido',
+      'http://localhost/manejo_actas/index.php?accion=crear_asistencia_invitados',
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(dataContenido)
+        body: JSON.stringify(dataInvitacion)
       }
     )
 
-    if (!response.ok) throw new Error('Error al definir el contenido de la sesión')
+    if (!response.ok) throw new Error('Error al invitar a los invitados')
 
     const result = await response.json()
-    console.log(result.message) // Muestra el mensaje de éxito en la consola
+    alert(`Invitados: ${result.message}`) // Muestra un mensaje de éxito
+    await loadInvitados(idSesion) // Recargar invitados después de invitar
   } catch (error) {
-    console.error('Error al guardar el contenido de la sesión:', error)
+    console.error('Error al invitar a los invitados:', error)
+    alert('Ocurrió un error al invitar a los invitados.')
   }
 }
 
-// Nueva función para actualizar la sesión
-const updateSesion = async (dataSesion) => {
-  try {
-    const response = await fetch(
-      'http://localhost/manejo_actas/index.php?accion=actualizar_sesion',
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(dataSesion)
-      }
-    )
-
-    const result = await response.json()
-    alert(`Sesión actualizada: ${result.message}`)
-  } catch (error) {
-    console.error('Error al actualizar la sesión:', error)
-    alert('Ocurrió un error al actualizar la sesión.')
-  }
-}
+// Restante del código...
 
 // Llamar a loadSesion al montar el componente
 loadSesion()
 </script>
+
 <template>
   <BreadCrumb modulo="Sesiones" accion="Editar" />
 
@@ -262,52 +244,26 @@ loadSesion()
     <button class="boton-1" @click="invitarMiembros">Invitar Miembros</button>
   </div>
 
-  <button class="boton-1" @click="editarSesion">Guardar Cambios</button>
+  <div class="my-6">
+    <h3 class="mb-2 text-lg font-bold">Invitados</h3>
+    <table class="min-w-full bg-white border border-gray-200">
+      <thead>
+        <tr class="bg-gray-200 text-gray-700">
+          <th class="py-2 px-4 border-b">Nombre</th>
+          <th class="py-2 px-4 border-b">Cargo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="invitado in miembros" :key="invitado.ID">
+          <td class="py-2 px-4 border-b">{{ invitado.NOMBRE }}</td>
+          <td class="py-2 px-4 border-b">{{ invitado.CARGO }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <button class="boton-1" @click="invitarInvitados">Invitar Invitados</button>
+  </div>
+
+  <div class="flex justify-end">
+    <button class="boton-1">Guardar Cambios</button>
+  </div>
 </template>
-
-<style scoped>
-.input-class {
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  padding: 0.5rem;
-  width: 100%;
-}
-
-.boton-1 {
-  background-color: #3b82f6;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.375rem;
-  border: none;
-  cursor: pointer;
-}
-
-.boton-1:hover {
-  background-color: #2563eb;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-
-th,
-td {
-  text-align: left;
-  padding: 0.75rem;
-}
-
-th {
-  background-color: #3b82f6;
-  color: white;
-}
-
-tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-tbody tr:hover {
-  background-color: #e2e8f0;
-}
-</style>
