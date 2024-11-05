@@ -7,9 +7,33 @@ const tipoDeSolicitante = ref('')
 const email = ref('')
 const celular = ref('')
 
-const agregarSolicitante = () => {
-  // Implementar la lógica para agregar un nuevo solicitante
-  alert(`Solicitante ${nombre.value} agregado`)
+// Método para agregar solicitante
+const agregarSolicitante = async () => {
+  try {
+    const response = await fetch('http://tu-api.com/crear_solicitante', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        nombre: nombre.value,
+        tipoDeSolicitante: tipoDeSolicitante.value,
+        email: email.value,
+        celular: celular.value
+      })
+    })
+
+    const result = await response.json()
+
+    if (response.ok) {
+      alert(`Solicitante ${nombre.value} agregado exitosamente`)
+    } else {
+      alert(`Error al agregar solicitante: ${result.message}`)
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    alert('Hubo un problema al agregar el solicitante. Intenta de nuevo.')
+  }
 }
 </script>
 

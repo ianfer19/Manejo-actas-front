@@ -1,16 +1,79 @@
 <script setup>
 import BreadCrumb from '../../../components/BreadCrumb.vue'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
-const invitado = {
-  id: 1,
-  nombre: 'Juan Perez',
-  dependencia: 'Recursos Humanos',
-  cargo: 'Gerente'
+const router = useRouter()
+const route = useRoute()
+
+// Información del invitado
+const invitado = ref({
+  ID: null,
+  NOMBRE: '',
+  DEPENDENCIA: '',
+  CARGO: ''
+})
+
+// Función para obtener el invitado desde la API
+async function obtenerInvitado(id) {
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=obtener_invitado&id=${id}`
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      invitado.value = data // Asignar los datos del invitado
+      console.log(data)
+    } else {
+      console.error('Error al obtener los datos del invitado')
+      alert('Hubo un error al cargar la información del invitado')
+    }
+  } catch (error) {
+    console.error('Error en la solicitud de obtención de invitado:', error)
+    alert('Hubo un error en la solicitud')
+  }
 }
 
-function actualizarInvitado() {
-  console.log('Invitado actualizado')
+// Función para actualizar el invitado en el servidor
+async function actualizarInvitado() {
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=actualizar_invitado&id=${invitado.value.id}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(invitado.value)
+      }
+    )
+    console.log(response.message)
+    if (response.ok) {
+      console.log('Invitado actualizado correctamente')
+      alert('Invitado actualizado correctamente')
+      router.push({ name: 'invitados-lista' }) // Redirige a la lista de invitados
+    } else {
+      const errorData = await response.json()
+      console.error('Error al actualizar el invitado:', errorData)
+      alert('Hubo un error al actualizar el invitado')
+    }
+  } catch (error) {
+    console.error('Error en la solicitud de actualización:', error)
+    alert('Hubo un error en la solicitud')
+  }
 }
+
+// Cargar datos del invitado al montar el componente
+onMounted(() => {
+  const id = route.params.id // Obtén el ID del invitado de los parámetros de la ruta
+  if (id) {
+    obtenerInvitado(id)
+  } else {
+    alert('No se proporcionó un ID de invitado')
+    router.push({ name: 'invitados-listar' }) // Redirige si no hay ID
+  }
+})
 </script>
 
 <template>
@@ -25,17 +88,17 @@ function actualizarInvitado() {
   <div class="grid gap-6 mb-6 md:grid-cols-2">
     <div>
       <label for="nombre" class="block mb-2 text-sm font-medium text-gray-900">Nombre</label>
-      <input v-model="invitado.nombre" type="text" id="nombre" class="input-field" />
+      <input v-model="invitado.NOMBRE" type="text" id="nombre" class="input-field" />
     </div>
     <div>
       <label for="dependencia" class="block mb-2 text-sm font-medium text-gray-900"
         >Dependencia</label
       >
-      <input v-model="invitado.dependencia" type="text" id="dependencia" class="input-field" />
+      <input v-model="invitado.DEPENDENCIA" type="text" id="dependencia" class="input-field" />
     </div>
     <div>
       <label for="cargo" class="block mb-2 text-sm font-medium text-gray-900">Cargo</label>
-      <input v-model="invitado.cargo" type="text" id="cargo" class="input-field" />
+      <input v-model="invitado.CARGO" type="text" id="cargo" class="input-field" />
     </div>
   </div>
 

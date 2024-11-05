@@ -43,5 +43,10 @@
     >
       <router-link to="/tareas-lista">Tareas</router-link>
     </div>
+    <div
+      class="bg-gray-100 mb-2 w-48 ml-3 rounded-lg hover:bg-blue-400 p-1 pl-3 text-gray-1000 hover:text-gray-100"
+    >
+      <router-link to="/actas-lista">Actas</router-link>
+    </div>
   </div>
 </template>

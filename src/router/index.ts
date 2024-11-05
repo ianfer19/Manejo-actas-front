@@ -6,6 +6,7 @@ import sesionRoutes from './sesion'
 import solicitantesRoutes from './solicitantes'
 import solicitudRoutes from './solicitud'
 import tareasRoutes from './tareas'
+import actasRoutes from './actas'
 
 const routes = [
   ...invitadosRoutes,
@@ -14,7 +15,8 @@ const routes = [
   ...sesionRoutes,
   ...solicitantesRoutes,
   ...solicitudRoutes,
-  ...tareasRoutes
+  ...tareasRoutes,
+  ...actasRoutes
 ]
 
 const router = createRouter({

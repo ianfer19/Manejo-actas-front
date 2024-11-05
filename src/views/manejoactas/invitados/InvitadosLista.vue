@@ -1,14 +1,21 @@
 <script setup>
-import BreadCrumb from '../../../components/BreadCrumb.vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import BreadCrumb from '../../../components/BreadCrumb.vue'
 
-const invitados = [
-  { id: 1, nombre: 'Juan Perez', dependencia: 'Recursos Humanos', cargo: 'Gerente' },
-  { id: 2, nombre: 'Maria Lopez', dependencia: 'Marketing', cargo: 'Directora' }
-  // Añadir más invitados aquí o cargar desde una API
-]
-
+const invitados = ref([]) // Usamos ref para la lista de invitados
 const router = useRouter()
+
+async function cargarInvitados() {
+  try {
+    const response = await fetch('http://localhost/manejo_actas/index.php?accion=obtener_invitados')
+    if (!response.ok) throw new Error('Error al cargar invitados')
+    invitados.value = await response.json()
+  } catch (error) {
+    console.error('Error:', error)
+  }
+}
+
 function verInvitado(id) {
   router.push({ name: 'invitados-detalle', params: { id } })
 }
@@ -17,12 +24,32 @@ function editarInvitado(id) {
   router.push({ name: 'invitados-editar', params: { id } })
 }
 
-const eliminarInvitado = (id) => {
+async function eliminarInvitado(id) {
   if (confirm('¿Estás seguro de que deseas eliminar este invitado?')) {
-    // Lógica para eliminar el miembro (puedes implementar esto más adelante)
-    alert(`Miembro con ID ${id} eliminado`)
+    try {
+      const response = await fetch('/ruta/api/invitados.php?action=eliminar_invitado', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id })
+      })
+      const result = await response.json()
+      if (result.success) {
+        invitados.value = invitados.value.filter((invitado) => invitado.id !== id)
+        alert(`Invitado con ID ${id} eliminado`)
+      } else {
+        alert(result.error || 'No se pudo eliminar el invitado')
+      }
+    } catch (error) {
+      console.error('Error eliminando el invitado:', error)
+    }
   }
 }
+
+onMounted(() => {
+  cargarInvitados()
+})
 </script>
 
 <template>
@@ -33,7 +60,9 @@ const eliminarInvitado = (id) => {
       <h2 class="mb-1 text-4xl font-bold text-blue-700">Lista de Invitados</h2>
     </div>
     <div class="flex justify-end">
-      <button @click="crearNuevoInvitado" class="boton-1">Crear nuevo invitado</button>
+      <button @click="router.push({ name: 'invitados-crear' })" class="boton-1">
+        Crear nuevo invitado
+      </button>
     </div>
   </div>
 
@@ -49,11 +78,11 @@ const eliminarInvitado = (id) => {
       </thead>
       <tbody>
         <tr v-for="invitado in invitados" :key="invitado.id" class="bg-white border-b">
-          <td class="px-6 py-4">{{ invitado.nombre }}</td>
-          <td class="px-6 py-4">{{ invitado.dependencia }}</td>
-          <td class="px-6 py-4">{{ invitado.cargo }}</td>
+          <td class="px-6 py-4">{{ invitado.NOMBRE }}</td>
+          <td class="px-6 py-4">{{ invitado.DEPENDENCIA }}</td>
+          <td class="px-6 py-4">{{ invitado.CARGO }}</td>
           <td class="px-6 py-4">
-            <button @click="verInvitado(invitado.id)" class="text-blue-600">
+            <button @click="verInvitado(invitado.IDINVITADOS)" class="text-blue-600">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -75,7 +104,7 @@ const eliminarInvitado = (id) => {
               </svg>
               Ver
             </button>
-            <button @click="editarInvitado(invitado.id)" class="text-yellow-600 ml-4">
+            <button @click="editarInvitado(invitado.IDINVITADOS)" class="text-yellow-600 ml-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -93,7 +122,7 @@ const eliminarInvitado = (id) => {
 
               Editar
             </button>
-            <button @click="eliminarInvitado(invitado.id)" class="text-red-600 ml-4">
+            <button @click="eliminarInvitado(invitado.IDINVITADOS)" class="text-red-600 ml-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
