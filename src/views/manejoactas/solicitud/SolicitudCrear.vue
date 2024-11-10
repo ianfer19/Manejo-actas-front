@@ -10,9 +10,33 @@ const solicitanteId = ref(1) // Establecer un ID de solicitante predeterminado
 const sesionId = ref(1) // Establecer un ID de sesión predeterminado
 const descripcionId = ref(1) // Establecer un ID de descripción predeterminado
 
-const agregarSolicitud = () => {
-  // Implementar la lógica para agregar una nueva solicitud
-  alert(`Solicitud para ${asunto.value} creada`)
+const agregarSolicitud = async () => {
+  const solicitudData = {
+    idSolicitud: Date.now(), // Genera un ID único temporal
+    dependencia: dependencia.value,
+    asunto: asunto.value,
+    decision: decision.value,
+    fechaDeSolicitud: fechaDeSolicitud.value,
+    solicitanteId: solicitanteId.value,
+    sesionId: sesionId.value,
+    descripcionId: descripcionId.value
+  }
+
+  try {
+    const response = await fetch('http://localhost/manejo_actas/index.php?accion=crear_solicitud', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(solicitudData)
+    })
+
+    const result = await response.json()
+    alert(result.message)
+  } catch (error) {
+    console.error('Error al enviar la solicitud:', error)
+    alert('Hubo un problema al enviar la solicitud.')
+  }
 }
 </script>
 

@@ -50,7 +50,9 @@ const crearActa = async () => {
     console.log('Acta creada en el servidor.')
 
     console.log('Obteniendo la última acta...')
-    const response = await fetch(`http://localhost/manejo_actas/index.php?accion=obtener_actas`)
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=obtener_ultima_acta`
+    )
 
     const data = await response.json()
     console.log('Datos de la última acta:', data)
