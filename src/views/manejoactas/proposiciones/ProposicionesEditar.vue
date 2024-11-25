@@ -1,23 +1,79 @@
 <script setup>
-import { ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
 import BreadCrumb from '../../../components/BreadCrumb.vue'
 
 const route = useRoute()
-const proposicion = ref({})
+const router = useRouter()
 
-// Implementar la lógica para cargar la proposición por ID y actualizarla
-const loadProposicion = () => {
+const proposicion = ref({
+  IDMIEMBRO: null,
+  DESCRIPCION: '',
+  DESICION: '',
+  SESION_IDSESION: null
+})
+
+// Función para obtener el token JWT desde el almacenamiento local
+function obtenerToken() {
+  return localStorage.getItem('token') // O la fuente donde almacenes el token
+}
+
+// Cargar la proposición por ID
+const loadProposicion = async () => {
   const id = route.params.id
-  // Cargar la proposición desde la base de datos usando el id
+  if (!id) {
+    alert('ID de proposición no proporcionado')
+    return
+  }
+
+  try {
+    const token = obtenerToken() // Obtener el token JWT
+    const response = await axios.get(
+      `http://localhost/manejo_actas/index.php?accion=proposicion_obtener_proposicion_por_id&idProposicion=${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}` // Incluir el token en la cabecera
+        }
+      }
+    )
+    proposicion.value = response.data
+  } catch (error) {
+    console.error('Error al cargar la proposición:', error)
+    alert('Error al cargar la proposición')
+  }
 }
 
-// Llamar a loadProposicion al montar el componente
-loadProposicion()
-
-const updateProposicion = () => {
-  // Implementar la lógica para actualizar la proposición en la base de datos
+// Actualizar la proposición en la base de datos
+const updateProposicion = async () => {
+  try {
+    const token = obtenerToken() // Obtener el token JWT
+    const response = await axios.put(
+      `http://localhost/manejo_actas/index.php?accion=proposicion_actualizar_proposicion&id=${proposicion.value.id}`,
+      proposicion.value,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` // Incluir el token en la cabecera
+        }
+      }
+    )
+    if (response.status === 200) {
+      alert('Proposición actualizada correctamente')
+      router.push({ name: 'proposiciones-lista' }) // Redirige a la lista de proposiciones
+    } else {
+      alert('Error al actualizar la proposición')
+    }
+  } catch (error) {
+    console.error('Error al actualizar la proposición:', error)
+    alert('Hubo un error al actualizar la proposición')
+  }
 }
+
+// Cargar la proposición al montar el componente
+onMounted(() => {
+  loadProposicion()
+})
 </script>
 
 <template>

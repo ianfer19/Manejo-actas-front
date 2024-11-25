@@ -4,22 +4,21 @@ const miembrosRoutes: Array<RouteRecordRaw> = [
   {
     path: '/miembros-crear',
     name: 'miembros-crear',
-    component: () => import('../views/manejoactas/miembros/MiembrosCrear.vue')
+    component: () => import('../views/manejoactas/miembros/MiembrosCrear.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/miembros-lista',
     name: 'miembros-lista',
-    component: () => import('../views/manejoactas/miembros/MiembrosLista.vue')
+    component: () => import('../views/manejoactas/miembros/MiembrosLista.vue'),
+    meta: { requiresAuth: true }
   },
-  {
-    path: '/miembros-detalle/:id',
-    name: 'miembros-detalle',
-    component: () => import('../views/manejoactas/miembros/MiembrosDetalle.vue')
-  },
+
   {
     path: '/miembros-editar/:id',
     name: 'miembros-editar',
-    component: () => import('../views/manejoactas/miembros/MiembrosEditar.vue')
+    component: () => import('../views/manejoactas/miembros/MiembrosEditar.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

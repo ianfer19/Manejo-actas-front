@@ -14,11 +14,25 @@ const invitado = ref({
   CARGO: ''
 })
 
+// Obtener el token del almacenamiento local (o desde donde lo almacenes)
+function obtenerToken() {
+  return localStorage.getItem('token') // Cambia esto según cómo guardes el token
+}
+
 // Función para obtener el invitado desde la API
 async function obtenerInvitado(id) {
   try {
+    const token = obtenerToken() // Obtener el token JWT
+
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=obtener_invitado&id=${id}`
+      `http://localhost/manejo_actas/index.php?accion=invitado_obtener_invitado&id=${id}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` // Agregar el token en el encabezado
+        }
+      }
     )
 
     if (response.ok) {
@@ -38,17 +52,20 @@ async function obtenerInvitado(id) {
 // Función para actualizar el invitado en el servidor
 async function actualizarInvitado() {
   try {
+    const token = obtenerToken() // Obtener el token JWT
+
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=actualizar_invitado&id=${invitado.value.id}`,
+      `http://localhost/manejo_actas/index.php?accion=invitado_actualizar_invitado&id=${invitado.value.ID}`,
       {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` // Agregar el token en el encabezado
         },
         body: JSON.stringify(invitado.value)
       }
     )
-    console.log(response.message)
+
     if (response.ok) {
       console.log('Invitado actualizado correctamente')
       alert('Invitado actualizado correctamente')

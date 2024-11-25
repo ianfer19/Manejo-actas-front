@@ -1,29 +1,129 @@
 <script setup>
 import BreadCrumb from '../../../components/BreadCrumb.vue'
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
 
 const route = useRoute()
+const router = useRouter()
 const tarea = ref({})
+const miembros = ref([])
+const miembrosAsignados = ref([])
+const miembroSeleccionado = ref(null)
+const token = localStorage.getItem('token') // Asumimos que el token está almacenado en localStorage
 
-const loadTarea = () => {
+// Cargar tarea por ID
+const loadTarea = async () => {
   const id = route.params.id
-  // Simulación de obtener la tarea por ID (reemplaza esto con una llamada API real)
-  tarea.value = {
-    ID_TAREAS: id,
-    DESCRIPCION: 'REVISION SOLICITUDES SALIDAS INTERNACIONALES',
-    SESION_IDSESION: 1,
-    FECHA_ENTREGA: '2014-04-17',
-    FECHA_VERIFICACION: '2014-05-17'
+  try {
+    const response = await axios.get(
+      'http://localhost/manejo_actas/index.php?accion=tarea_obtener_tarea_por_id',
+      {
+        params: { idTarea: id },
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    )
+    tarea.value = response.data
+    // Obtener los miembros asignados a la tarea
+    await loadMiembrosAsignados(id)
+  } catch (error) {
+    console.error('Error al obtener la tarea:', error)
+    alert('No se pudo obtener la tarea.')
   }
 }
 
-const actualizarTarea = () => {
-  // Implementar la lógica para actualizar la tarea (llamada API)
-  alert(`Tarea con ID ${tarea.value.ID_TAREAS} actualizada`)
+// Cargar miembros asignados a la tarea
+const loadMiembrosAsignados = async () => {
+  const idTarea = route.params.id
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=miembrotarea_obtener_miembro_tarea_por_id&idTareas=${idTarea}`,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    )
+    const data = await response.json() // Obtenemos el texto de la respuesta
+    miembrosAsignados.value = data
+  } catch (error) {
+    console.error('Error al obtener miembros asignados:', error)
+  }
 }
 
-onMounted(loadTarea)
+async function loadMiembros() {
+  try {
+    const response = await fetch(
+      'http://localhost/manejo_actas/index.php?accion=miembro_obtener_miembros',
+      {
+        method: 'GET',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    if (!response.ok) throw new Error('Error al cargar miembros')
+
+    const data = await response.json() // Obtenemos el texto de la respuesta
+    miembros.value = JSON.parse(data) // Convertimos la cadena JSON en un objeto
+  } catch (error) {
+    console.error('Error:', error)
+  }
+}
+
+// Asignar miembro a la tarea
+const asignarMiembro = async () => {
+  if (miembroSeleccionado.value) {
+    try {
+      const response = await axios.post(
+        'http://localhost/manejo_actas/index.php?accion=miembrotarea_asignar_miembro_tarea',
+        {
+          idMiembro: miembroSeleccionado.value.IDMIEMBRO,
+          idTareas: tarea.value.ID_TAREAS,
+          fechaAsignacion: new Date().toISOString()
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      )
+      alert('Se ha asignado correctamente')
+      loadMiembrosAsignados(tarea.value.ID_TAREAS) // Recargar miembros asignados
+    } catch (error) {
+      console.error('Error al asignar miembro:', error)
+      alert('No se pudo asignar el miembro.')
+    }
+  } else {
+    alert('Por favor, selecciona un miembro.')
+  }
+}
+
+// Actualizar la tarea con los nuevos datos
+const actualizarTarea = async () => {
+  try {
+    const response = await axios.put(
+      'http://localhost/manejo_actas/index.php?accion=tarea_actualizar_tarea',
+      {
+        ID_TAREAS: tarea.value.ID_TAREAS,
+        DESCRIPCION: tarea.value.DESCRIPCION,
+        SESION_IDSESION: tarea.value.SESION_IDSESION,
+        FECHA_ENTREGA: tarea.value.FECHA_ENTREGA,
+        FECHA_VERIFICACION: tarea.value.FECHA_VERIFICACION
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    )
+    alert(response.data.message)
+    router.push('/tareas-lista') // Redirigir a la lista de tareas después de actualizar
+  } catch (error) {
+    console.error('Error al actualizar la tarea:', error)
+    alert('No se pudo actualizar la tarea.')
+  }
+}
+
+onMounted(() => {
+  loadTarea()
+  loadMiembros()
+})
 </script>
 
 <template>
@@ -62,4 +162,29 @@ onMounted(loadTarea)
   </div>
 
   <button @click="actualizarTarea" class="boton-1">Actualizar Tarea</button>
+
+  <h3 class="text-2xl font-bold mt-8">Miembros Asignados</h3>
+
+  <table class="min-w-full table-auto border-collapse mt-4">
+    <thead>
+      <tr class="bg-gray-100">
+        <th class="px-4 py-2 text-left">Nombre</th>
+        <th class="px-4 py-2 text-left">Cargo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="miembro in miembrosAsignados" :key="miembro.IDMIEMBRO">
+        <td class="border px-4 py-2">{{ miembro.NOMBRE }}</td>
+        <td class="border px-4 py-2">{{ miembro.CARGO }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 class="text-2xl font-bold mt-8">Asignar Miembro</h3>
+  <select v-model="miembroSeleccionado" class="input-field">
+    <option v-for="miembro in miembros" :key="miembro.IDMIEMBRO" :value="miembro">
+      {{ miembro.NOMBRE }} ({{ miembro.CARGO }})
+    </option>
+  </select>
+  <button @click="asignarMiembro" class="boton-1 mt-2">Asignar Miembro</button>
 </template>

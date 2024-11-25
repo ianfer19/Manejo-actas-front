@@ -8,17 +8,20 @@ const ActasRoutes: Array<RouteRecordRaw> = [
   {
     path: '/actas-lista',
     name: 'actas-lista',
-    component: ActasLista
+    component: ActasLista,
+    meta: { requiresAuth: true }
   },
   {
     path: '/acta-editar/:id',
     name: 'acta-editar',
-    component: ActasEditar
+    component: ActasEditar,
+    meta: { requiresAuth: true }
   },
   {
     path: '/acta-detalle/:id',
     name: 'acta-detalle',
-    component: ActasDetalle
+    component: ActasDetalle,
+    meta: { requiresAuth: true }
   }
 ]
 

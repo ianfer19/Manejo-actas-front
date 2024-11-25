@@ -2,8 +2,10 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import BreadCrumb from '../../../components/BreadCrumb.vue'
+
 const router = useRouter()
 const route = useRoute()
+
 const solicitante = ref({
   NOMBRE: '',
   TIPODESOLICITANTE: '',
@@ -11,12 +13,21 @@ const solicitante = ref({
   CELULAR: ''
 })
 
+// Obtener el token de localStorage
+const token = localStorage.getItem('token')
+
 // Método para cargar el solicitante por ID
 const loadSolicitante = async () => {
   const id = route.params.id
   try {
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=obtener_solicitante_por_id&idSolicitante=${id}`
+      `http://localhost/manejo_actas/index.php?accion=solicitante_obtener_solicitante_por_id&idSolicitante=${id}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}` // Agregar el token aquí
+        }
+      }
     )
     const data = await response.json()
 
@@ -25,7 +36,9 @@ const loadSolicitante = async () => {
     } else {
       alert('No se pudo cargar el solicitante.')
     }
-  } catch (error) {}
+  } catch (error) {
+    console.error('Error al cargar el solicitante:', error)
+  }
 }
 
 // Llamar a loadSolicitante al montar el componente
@@ -33,18 +46,19 @@ onMounted(loadSolicitante)
 
 // Método para actualizar el solicitante
 const updateSolicitante = async () => {
-  const id = route.params.id // Get the id from the route
+  const id = route.params.id // Obtener el ID desde la ruta
   try {
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=actualizar_solicitante`, // No need for id in the query string
+      `http://localhost/manejo_actas/index.php?accion=actualizar_solicitante`,
       {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` // Agregar el token aquí
         },
         body: JSON.stringify({
-          ...solicitante.value, // Include all data from solicitante
-          idSolicitante: id // Add idSolicitante here
+          ...solicitante.value, // Incluir todos los datos del solicitante
+          idSolicitante: id // Añadir idSolicitante
         })
       }
     )

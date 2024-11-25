@@ -13,7 +13,7 @@ const sesionId = ref('')
 const addProposicion = async () => {
   try {
     const response = await axios.post(
-      'http://localhost/manejo_actas/index.php?accion=crear_proposicion',
+      'http://localhost/manejo_actas/index.php?accion=proposicion_crear_proposicion',
       {
         idProposicion: Date.now(), // Generar un ID único, por ejemplo usando la fecha actual
         descripcion: descripcion.value,

@@ -24,13 +24,16 @@ const crearSesion = async () => {
   }
 
   try {
-    const response = await fetch('http://localhost/manejo_actas/index.php?accion=crear_sesion', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    })
+    const response = await fetch(
+      'http://localhost/manejo_actas/index.php?accion=sesion_crear_sesion',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      }
+    )
 
     const result = await response.json()
 

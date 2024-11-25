@@ -6,6 +6,10 @@ import BreadCrumb from '../../../components/BreadCrumb.vue'
 
 const router = useRouter()
 const route = useRoute()
+// Función para obtener el token del localStorage
+const getToken = () => {
+  return localStorage.getItem('token')
+}
 
 // Información del miembro
 const miembro = ref({
@@ -26,8 +30,16 @@ const loadMiembro = async () => {
   }
 
   try {
+    const token = getToken() // Obtener el token
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=obtener_miembro_por_id&idMiembro=${id}`
+      `http://localhost/manejo_actas/index.php?accion=miembro_obtener_miembro_por_id&idMiembro=${id}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      }
     )
     const data = await response.json() // Obtenemos el texto de la respuesta
     miembro.value = JSON.parse(data) // Convertimos la cadena JSON en un objeto
@@ -41,8 +53,13 @@ const loadMiembro = async () => {
 const updateMiembro = async () => {
   try {
     const response = await axios.put(
-      'http://localhost/manejo_actas/index.php?accion=actualizar_miembro',
+      'http://localhost/manejo_actas/index.php?accion=miembro_actualizar_miembro',
       {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` // Agregar el token en el encabezado
+        },
         idMiembro: miembro.value.IDMIEMBRO,
         nombre: miembro.value.NOMBRE,
         cargo: miembro.value.CARGO

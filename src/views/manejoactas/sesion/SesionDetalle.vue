@@ -2,20 +2,26 @@
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import BreadCrumb from '../../../components/BreadCrumb.vue'
-import { Document, Packer, Paragraph, Table, TableCell, TableRow } from 'docx'
 import axios from 'axios'
 
 const route = useRoute()
 let sesion = ref({})
 const miembrosInvitados = ref([]) // Estado para los miembros invitados
 const miembros = ref([]) // Estado para los invitados
+const token = localStorage.getItem('token') // Obtener el token desde el almacenamiento local
 
 // Implementar la lógica para cargar la sesión por ID
 const loadSesion = async () => {
   const id = route.params.id
   try {
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=obtener_sesion_por_id&idSesion=${id}`
+      `http://localhost/manejo_actas/index.php?accion=sesion_obtener_sesion_por_id&idSesion=${id}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}` // Agrega el token aquí
+        }
+      }
     )
     if (!response.ok) throw new Error('Error al cargar la sesión')
 
@@ -30,6 +36,7 @@ const loadSesion = async () => {
     alert('No se pudo cargar la sesión')
   }
 }
+
 const crearActa = async () => {
   const id = route.params.id
   console.log('ID de la sesión:', id)
@@ -46,129 +53,20 @@ const crearActa = async () => {
 
   try {
     console.log('Creando acta en el servidor...')
-    await axios.post('http://localhost/manejo_actas/index.php?accion=crear_acta', { sesionId: id })
+    await axios.post(
+      'http://localhost/manejo_actas/index.php?accion=acta_crear_acta',
+      {
+        sesionId: id
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}` // Agrega el token aquí
+        }
+      }
+    )
     console.log('Acta creada en el servidor.')
 
-    console.log('Obteniendo la última acta...')
-    const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=obtener_ultima_acta`
-    )
-
-    const data = await response.json()
-    console.log('Datos de la última acta:', data)
-
-    // Verificar la estructura de los datos
-    let numeroActa = data
-
-    // Si numeroActa sigue siendo undefined, manejar el error
-    if (!numeroActa) {
-      alert('No se pudo obtener el número de acta.')
-      return
-    }
-
-    // Crear un nuevo documento
-    console.log('Creando nuevo documento...')
-    const doc = new Document({
-      sections: [
-        {
-          children: [
-            new Paragraph({
-              text: 'Acta de Sesión',
-              heading: 'Heading1',
-              bold: true,
-              alignment: 'center'
-            }),
-            new Paragraph({ text: `Número de Acta: ${numeroActa}`, bold: true }),
-            new Paragraph({ text: `Lugar: ${sesion.value.LUGAR}`, bold: true }),
-            new Paragraph({ text: `Fecha Inicio: ${sesion.value.FECHA}`, bold: true }),
-            new Paragraph({ text: `Hora de Inicio: ${sesion.value.HORAINICIO}`, bold: true }),
-            new Paragraph({ text: `Hora de Fin: ${sesion.value.HORAFINAL}`, bold: true })
-          ]
-        }
-      ]
-    })
-
-    // Crear tabla para miembros invitados
-    console.log('Creando tabla para miembros invitados...')
-    const miembrosTable = new Table({
-      rows: [
-        new TableRow({
-          children: [
-            new TableCell({ children: [new Paragraph('CARGO')] }),
-            new TableCell({ children: [new Paragraph('NOMBRE')] }),
-            new TableCell({ children: [new Paragraph('ASISTIÓ')] }),
-            new TableCell({ children: [new Paragraph('NO ASISTIÓ')] }),
-            new TableCell({ children: [new Paragraph('EXCUSA')] })
-          ]
-        }),
-        ...miembrosInvitados.value.map((miembro, index) => {
-          console.log(`Miembro ${index + 1}:`, miembro) // Mostrar datos de cada miembro
-          return new TableRow({
-            children: [
-              new TableCell({ children: [new Paragraph(miembro.CARGO || '')] }),
-              new TableCell({ children: [new Paragraph(miembro.NOMBRE || '')] }),
-              new TableCell({
-                children: [new Paragraph(miembro.ESTADO_ASISTENCIA === 'X' ? 'Sí' : '')]
-              }),
-              new TableCell({
-                children: [new Paragraph(miembro.ESTADO_ASISTENCIA === '-' ? 'No' : '')]
-              }),
-              new TableCell({ children: [new Paragraph(miembro.excusa || '')] })
-            ]
-          })
-        })
-      ]
-    })
-
-    doc.addSection({
-      children: [
-        new Paragraph({ text: 'Miembros Asistentes', bold: true, heading: 'Heading1' }),
-        miembrosTable
-      ]
-    })
-
-    // Crear y añadir tabla de invitados
-    console.log('Creando tabla de invitados...')
-    const invitadosTable = new Table({
-      rows: [
-        new TableRow({
-          children: [
-            new TableCell({ children: [new Paragraph('CARGO')] }),
-            new TableCell({ children: [new Paragraph('NOMBRE')] })
-          ]
-        }),
-        ...miembros.value.map((invitado, index) => {
-          console.log(`Invitado ${index + 1}:`, invitado) // Mostrar datos de cada invitado
-          return new TableRow({
-            children: [
-              new TableCell({ children: [new Paragraph(invitado.CARGO || '')] }),
-              new TableCell({ children: [new Paragraph(invitado.NOMBRE || '')] })
-            ]
-          })
-        })
-      ]
-    })
-
-    doc.addSection({
-      children: [
-        new Paragraph({ text: 'Invitados', bold: true, heading: 'Heading1' }),
-        invitadosTable
-      ]
-    })
-
-    // Guardar el documento como un blob
-    console.log('Guardando el documento como un blob...')
-    const blob = await Packer.toBlob(doc)
-    const url = URL.createObjectURL(blob)
-
-    // Crear un enlace para descargar el archivo
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `Acta_${numeroActa}.docx`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    console.log('Descarga del acta completada.')
+    alert('Acta creada exitosamente.')
   } catch (error) {
     console.error('Error al crear el acta:', error)
     alert(
@@ -182,7 +80,12 @@ const crearActa = async () => {
 const loadMiembrosInvitados = async (idSesion) => {
   try {
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=obtener_asistencia_por_sesion&idSesion=${idSesion}`
+      `http://localhost/manejo_actas/index.php?accion=asistencia_obtener_asistencia_por_sesion&idSesion=${idSesion}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}` // Agregar token
+        }
+      }
     )
 
     if (!response.ok) throw new Error('Error al cargar los miembros invitados')
@@ -205,7 +108,12 @@ const loadMiembrosInvitados = async (idSesion) => {
 const loadInvitados = async (idSesion) => {
   try {
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=obtener_asistencia_invitados_por_sesion&idSesion=${idSesion}`
+      `http://localhost/manejo_actas/index.php?accion=asistencia_obtener_asistencia_invitados_por_sesion&idSesion=${idSesion}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}` // Agregar token
+        }
+      }
     )
 
     if (!response.ok) throw new Error('Error al cargar los invitados')

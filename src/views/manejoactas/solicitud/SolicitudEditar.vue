@@ -7,12 +7,20 @@ const route = useRoute()
 const solicitud = ref({})
 const errorMessage = ref('') // Variable para almacenar el mensaje de error
 
+// Obtener el token desde localStorage
+const token = localStorage.getItem('token')
+
 const loadSolicitud = async () => {
   const id = route.params.id
   errorMessage.value = '' // Reinicia el mensaje de error
   try {
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=obtener_solicitud_por_id&idSolicitud=${id}`
+      `http://localhost/manejo_actas/index.php?accion=solicitud_obtener_solicitud_por_id&idSolicitud=${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}` // Agregar el token al encabezado
+        }
+      }
     )
     if (!response.ok) {
       throw new Error('Error al obtener la solicitud')
@@ -28,11 +36,12 @@ const loadSolicitud = async () => {
 const actualizarSolicitud = async () => {
   try {
     const response = await fetch(
-      'http://localhost/manejo_actas/index.php?accion=actualizar_solicitud',
+      'http://localhost/manejo_actas/index.php?accion=solicitud_actualizar_solicitud',
       {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` // Agregar el token al encabezado
         },
         body: JSON.stringify({
           idSolicitud: solicitud.value.IDSOLICITUD,
@@ -48,10 +57,14 @@ const actualizarSolicitud = async () => {
     )
 
     const data = await response.json()
-    alert(data.message)
+    if (response.ok) {
+      alert(data.message) // Mensaje de éxito
+    } else {
+      throw new Error(data.message || 'Error desconocido al actualizar la solicitud')
+    }
   } catch (error) {
     console.error('Error al actualizar la solicitud:', error)
-    alert('Error al actualizar la solicitud')
+    alert('Error al actualizar la solicitud: ' + error.message)
   }
 }
 

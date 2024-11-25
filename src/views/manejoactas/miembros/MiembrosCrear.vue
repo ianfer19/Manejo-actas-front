@@ -9,7 +9,7 @@ const cargo = ref('')
 const agregarMiembro = async () => {
   try {
     const response = await axios.post(
-      'http://localhost/manejo_actas/index.php?accion=crear_miembro',
+      'http://localhost/manejo_actas/index.php?accion=miembro_crear_miembro',
       {
         nombre: nombre.value,
         cargo: cargo.value

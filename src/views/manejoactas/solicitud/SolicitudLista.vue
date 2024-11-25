@@ -1,138 +1,156 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import { useRouter } from 'vue-router'
 import BreadCrumb from '../../../components/BreadCrumb.vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
 const solicitudes = ref([])
 
+// Filtros
+const filtroDependencia = ref('')
+const filtroAsunto = ref('')
+const token = localStorage.getItem('token')
+
+// Función para cargar las solicitudes desde la URL
+const loadSolicitudes = async () => {
+  try {
+    const response = await fetch(
+      'http://localhost/manejo_actas/index.php?accion=solicitud_obtener_solicitudes',
+      {
+        headers: {
+          Authorization: `Bearer ${token}` // Agregar el token al encabezado
+        }
+      }
+    )
+    if (response.ok) {
+      const data = await response.json()
+      solicitudes.value = data // Asume que los datos devueltos son un arreglo de solicitudes
+    } else {
+      alert('Error al cargar las solicitudes')
+    }
+  } catch (error) {
+    console.error('Error al obtener las solicitudes:', error)
+    alert('Hubo un problema al cargar las solicitudes')
+  }
+}
+
+// Filtrar las solicitudes basadas en dependencia y asunto
+const solicitudesFiltradas = computed(() => {
+  return solicitudes.value.filter((solicitud) => {
+    const dependenciaValida = filtroDependencia.value
+      ? solicitud.DEPENDENCIA.toLowerCase().includes(filtroDependencia.value.toLowerCase())
+      : true
+
+    const asuntoValido = filtroAsunto.value
+      ? solicitud.ASUNTO.toLowerCase().includes(filtroAsunto.value.toLowerCase())
+      : true
+
+    return dependenciaValida && asuntoValido
+  })
+})
+
+// Navegar a otras acciones
 const verSolicitud = (id) => {
-  router.push({ name: 'solicitud-detalle', params: { id } })
+  router.push({ name: 'solicitudes-detalle', params: { id } })
 }
 
 const editarSolicitud = (id) => {
   router.push({ name: 'solicitud-editar', params: { id } })
 }
 
-const eliminarSolicitud = async (id) => {
-  const confirmDelete = confirm('¿Estás seguro de que deseas eliminar esta solicitud?')
-  if (confirmDelete) {
-    try {
-      const response = await axios.delete(
-        'http://localhost/manejo_actas/index.php?accion=eliminar_solicitud',
-        {
-          data: {
-            idSolicitud: id
-          }
-        }
-      )
-      alert(response.data.message) // Muestra el mensaje de respuesta del servidor
-
-      // Actualiza la lista de solicitudes después de eliminar
-      solicitudes.value = solicitudes.value.filter((solicitud) => solicitud.IDSOLICITUD !== id)
-    } catch (error) {
-      console.error('Error al eliminar la solicitud:', error)
-      alert('Ocurrió un error al eliminar la solicitud.')
-    }
+const eliminarSolicitud = (id) => {
+  if (confirm('¿Estás seguro de que deseas eliminar esta solicitud?')) {
+    // Lógica para eliminar la solicitud (puedes implementar esto más adelante)
+    alert(`Solicitud con ID ${id} eliminada`)
   }
 }
 
-// Obtener las solicitudes cuando el componente se monta
-onMounted(async () => {
-  try {
-    const response = await axios.get(
-      'http://localhost/manejo_actas/index.php?accion=obtener_solicitudes'
-    )
-    solicitudes.value = response.data
-  } catch (error) {
-    console.error('Error al obtener las solicitudes:', error)
-  }
-})
+onMounted(loadSolicitudes)
 </script>
 
 <template>
-  <BreadCrumb modulo="Actas" accion="Lista" />
-  <div class="bg-blue-500 mb-2 w-48 ml-3 rounded-lg hover:bg-blue-400 p-1 pl-3 text-gray-1000">
-    <router-link to="/solicitud-crear">Crear Solicitud</router-link>
+  <BreadCrumb modulo="Solicitudes" accion="Lista" />
+
+  <!-- Filtros -->
+  <div class="mb-4">
+    <label for="dependencia" class="mr-2">Dependencia:</label>
+    <input
+      v-model="filtroDependencia"
+      type="text"
+      id="dependencia"
+      class="border p-2"
+      placeholder="Filtrar por Dependencia"
+    />
   </div>
-  <div class="overflow-x-auto">
-    <h2 class="text-4xl mb-4">Lista de Solicitudes</h2>
-    <table class="w-full text-sm text-left text-gray-500">
-      <thead class="text-xs text-gray-700 uppercase bg-blue-100">
-        <tr>
-          <th class="border-gray-300 p-2">ID</th>
-          <th class="border-gray-300 p-2">Dependencia</th>
-          <th class="border-gray-300 p-2">Asunto</th>
-          <th class="border-gray-300 p-2">Decisión</th>
-          <th class="border-gray-300 p-2">Fecha de Solicitud</th>
-          <th class="border-gray-300 p-2">ID del Solicitante</th>
-          <th class="border-gray-300 p-2">ID de Sesión</th>
-          <th class="border-gray-300 p-2">ID de Descripción</th>
-          <th class="border-gray-300 p-2">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="solicitud in solicitudes" :key="solicitud.IDSOLICITUD" class="border-b">
-          <td class="border-gray-300 p-2">{{ solicitud.IDSOLICITUD }}</td>
-          <td class="border-gray-300 p-2">{{ solicitud.DEPENDENCIA }}</td>
-          <td class="border-gray-300 p-2">{{ solicitud.ASUNTO }}</td>
-          <td class="border-gray-300 p-2">{{ solicitud.DESICION }}</td>
-          <td class="border-gray-300 p-2">{{ solicitud.FECHADESOLICITUD }}</td>
-          <td class="border-gray-300 p-2">{{ solicitud.SOLICITANTE_IDSOLICITANTE }}</td>
-          <td class="border-gray-300 p-2">{{ solicitud.SESION_IDSESION }}</td>
-          <td class="border-gray-300 p-2">{{ solicitud.DESCRIPCION_IDDESCRIPCION }}</td>
-          <td class="border-gray-300 p-2">
-            <button @click="verSolicitud(solicitud.IDSOLICITUD)" class="text-blue-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="{1.5}"
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                />
-              </svg>
-              Ver
-            </button>
-            <button @click="eliminarSolicitud(solicitud.IDSOLICITUD)" class="text-red-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="size-6"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-11 .562c.34-.059.68-.114 1.022-.165m0 0a48.108 48.108 0 0 1 3.478-.397m5.044 0h-4.52m0 0L10.5 3.75a2.25 2.25 0 0 1 3 0l1.028 1.28Zm-4.52 0h4.52"
-                />
-              </svg>
-              Eliminar
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+
+  <div class="mb-4">
+    <label for="asunto" class="mr-2">Asunto:</label>
+    <input
+      v-model="filtroAsunto"
+      type="text"
+      id="asunto"
+      class="border p-2"
+      placeholder="Filtrar por Asunto"
+    />
   </div>
+
+  <!-- Lista -->
+  <h2 class="text-2xl font-bold mb-4">Lista de Solicitudes</h2>
+  <table class="table-auto w-full text-left">
+    <thead>
+      <tr class="bg-blue-100">
+        <th>ID</th>
+        <th>Dependencia</th>
+        <th>Asunto</th>
+        <th>Fecha de Solicitud</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="solicitud in solicitudesFiltradas" :key="solicitud.IDSOLICITUD">
+        <td>{{ solicitud.IDSOLICITUD }}</td>
+        <td>{{ solicitud.DEPENDENCIA }}</td>
+        <td>{{ solicitud.ASUNTO }}</td>
+        <td>{{ solicitud.FECHADESOLICITUD }}</td>
+        <td>
+          <button @click="editarSolicitud(solicitud.IDSOLICITUD)" class="text-yellow-600 ml-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+              />
+            </svg>
+            Editar
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </template>
 
 <style scoped>
-.size-6 {
-  width: 24px;
-  height: 24px;
+.table-auto {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-auto th,
+.table-auto td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.table-auto th {
+  background-color: #f9f9f9;
+  font-weight: bold;
 }
 </style>

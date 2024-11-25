@@ -23,13 +23,16 @@ const agregarSolicitud = async () => {
   }
 
   try {
-    const response = await fetch('http://localhost/manejo_actas/index.php?accion=crear_solicitud', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(solicitudData)
-    })
+    const response = await fetch(
+      'http://localhost/manejo_actas/index.php?accion=solicitud_crear_solicitud',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(solicitudData)
+      }
+    )
 
     const result = await response.json()
     alert(result.message)

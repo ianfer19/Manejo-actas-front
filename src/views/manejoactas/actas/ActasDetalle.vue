@@ -2,6 +2,7 @@
   <div class="acta-detalle">
     <div class="boton-container">
       <button @click="generatePDF" class="btn-verde">Descargar PDF</button>
+      <button @click="abrirModalOrden" class="btn-verde">Agregar Orden del Día</button>
     </div>
 
     <!-- Contenedor a convertir en PDF -->
@@ -10,6 +11,7 @@
       <div class="pdf-page">
         <img :src="plantillaInicio" alt="Plantilla Inicio" class="encabezado" />
         <div class="page-content">
+          <!-- Tabla de Acta -->
           <table>
             <thead>
               <tr>
@@ -27,6 +29,7 @@
             </tbody>
           </table>
 
+          <!-- Tabla de Sesión -->
           <table>
             <thead>
               <tr>
@@ -112,26 +115,60 @@
             </tbody>
           </table>
 
+          <!-- Tabla de Órdenes del Día -->
+          <div class="table-title">Órdenes del Día</div>
           <table>
             <thead>
               <tr>
+                <th>ID Orden</th>
                 <th>Descripción</th>
-                <th>Decisión</th>
-                <th>Miembro</th>
-                <th>ID Sesión</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="proposicion in proposiciones" :key="proposicion.ID_PROPOSICIONES">
-                <td>{{ proposicion.DESCRIPCION }}</td>
-                <td>{{ proposicion.DESICION }}</td>
-                <td>{{ proposicion.NOMBRE_MIEMBRO }}</td>
-                <td>{{ proposicion.SESION_IDSESION }}</td>
+              <tr v-for="orden in ordenDelDia" :key="orden.ID_ORDEN">
+                <td>{{ orden.ID_ORDEN }}</td>
+                <td>{{ orden.DESCRIPCION }}</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <img :src="plantillaFin" alt="Plantilla Fin" class="pie" />
+
+        <!-- Tabla de Proposiciones -->
+        <table>
+          <thead>
+            <tr>
+              <th>Descripción</th>
+              <th>Decisión</th>
+              <th>Miembro</th>
+              <th>ID Sesión</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="proposicion in proposiciones" :key="proposicion.ID_PROPOSICIONES">
+              <td>{{ proposicion.DESCRIPCION }}</td>
+              <td>{{ proposicion.DESICION }}</td>
+              <td>{{ proposicion.NOMBRE_MIEMBRO }}</td>
+              <td>{{ proposicion.SESION_IDSESION }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <img :src="plantillaFin" alt="Plantilla Fin" class="pie" />
+    </div>
+
+    <!-- Modal para agregar Orden del Día -->
+    <div v-if="mostrarModalOrden" class="modal-overlay">
+      <div class="modal">
+        <h3>Agregar Orden del Día</h3>
+        <textarea
+          v-model="nuevaOrden.DESCRIPCION"
+          placeholder="Escribe la descripción de la nueva orden..."
+          rows="4"
+        ></textarea>
+        <div class="modal-actions">
+          <button class="btn-verde" @click="agregarOrdenDia">Guardar</button>
+          <button class="btn-rojo" @click="cerrarModalOrden">Cancelar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -153,13 +190,28 @@ export default {
       miembrosAsistentes: [],
       invitadosAsistentes: [],
       plantillaInicio: plantillaInicio,
-      plantillaFin: plantillaFin
+      plantillaFin: plantillaFin,
+      ordenDelDia: [], // Nuevos datos para el Orden del Día
+      nuevaOrden: {
+        DESCRIPCION: '' // Campo para nueva orden
+      },
+      mostrarModalOrden: false
     }
   },
   mounted() {
     const route = useRoute()
     const numActa = route.params.id
-    fetch(`http://localhost/manejo_actas/index.php?accion=obtener_completa&numActa=${numActa}`)
+    const token = localStorage.getItem('token')
+    fetch(
+      `http://localhost/manejo_actas/index.php?accion=acta_obtener_completa&numActa=${numActa}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
         this.acta = data.acta
@@ -170,6 +222,28 @@ export default {
       })
       .catch((error) => {
         console.error('Error al obtener los datos del acta:', error)
+      })
+    // Obtener las órdenes del día relacionadas con el acta
+    fetch(
+      `http://localhost/manejo_actas/index.php?accion=ordendia_obtener_ordenes_por_acta&actaNum=${numActa}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          this.ordenDelDia = data // Asignar las órdenes del día obtenidas
+        } else {
+          console.error('Error al obtener órdenes del día:', data.error)
+        }
+      })
+      .catch((error) => {
+        console.error('Error al obtener órdenes del día:', error)
       })
   },
   methods: {
@@ -188,6 +262,40 @@ export default {
 
     formatTime(time) {
       return time ? time.slice(0, 8) : ''
+    },
+    abrirModalOrden() {
+      this.mostrarModalOrden = true
+    },
+    cerrarModalOrden() {
+      this.mostrarModalOrden = false
+      this.nuevaOrden.DESCRIPCION = ''
+    },
+    agregarOrdenDia() {
+      const token = localStorage.getItem('token')
+      fetch(`http://localhost/manejo_actas/index.php?accion=ordendia_crear_orden_dia`, {
+        method: 'POST',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          actaNum: this.acta.NUM_ACTAS,
+          descripcion: this.nuevaOrden.DESCRIPCION
+        })
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.mensaje) {
+            this.ordenDelDia.push({
+              ID_ORDEN: data.id_orden,
+              DESCRIPCION: this.nuevaOrden.DESCRIPCION
+            })
+            this.cerrarModalOrden()
+          } else {
+            console.error('Error al agregar Orden del Día:', data.error)
+          }
+        })
+        .catch((error) => console.error('Error en la solicitud:', error))
     }
   }
 }
@@ -252,5 +360,58 @@ td {
   margin-bottom: -20;
 }
 .page-content {
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.modal h3 {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.modal textarea {
+  width: 100%;
+  margin: 10px 0;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-rojo {
+  background-color: red;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-rojo:hover {
+  background-color: darkred;
 }
 </style>

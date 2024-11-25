@@ -15,13 +15,22 @@ const tema = ref('')
 const miembrosInvitados = ref([]) // Estado para los miembros invitados
 const miembros = ref([]) // Estado para los miembros (invitados)
 
+// Obtener el token del almacenamiento local
+const token = localStorage.getItem('token')
+
 // Implementar la lógica para cargar la sesión por ID
 const loadSesion = async () => {
   const idSesion = route.params.id
   console.log('ID Sesión:', idSesion)
   try {
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=obtener_sesion_por_id&idSesion=${idSesion}`
+      `http://localhost/manejo_actas/index.php?accion=sesion_obtener_sesion_por_id&idSesion=${idSesion}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}` // Agrega el token aquí
+        }
+      }
     )
 
     if (!response.ok) throw new Error('Error al cargar la sesión')
@@ -54,7 +63,13 @@ const loadSesion = async () => {
 const loadContenidoSesion = async (idSesion) => {
   try {
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=obtener_contenido_sesion&idSesion=${idSesion}`
+      `http://localhost/manejo_actas/index.php?accion=sesion_obtener_contenido_sesion&idSesion=${idSesion}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}` // Agrega el token aquí
+        }
+      }
     )
 
     if (!response.ok) throw new Error('Error al cargar el contenido de la sesión')
@@ -63,9 +78,8 @@ const loadContenidoSesion = async (idSesion) => {
 
     // Asegúrate de que hay datos antes de acceder a ellos
     if (data.length > 0) {
-      // Asignar valores a tema y contenido desde el primer objeto del array
-      contenido.value = data[0].DESCRIPCION || '' // Asignar el contenido
-      tema.value = data[0].TEMA || '' // Asignar el tema
+      contenido.value = data[0].DESCRIPCION || ''
+      tema.value = data[0].TEMA || ''
     }
   } catch (error) {
     console.error('Error al cargar el contenido de la sesión:', error)
@@ -76,14 +90,19 @@ const loadContenidoSesion = async (idSesion) => {
 const loadMiembrosInvitados = async (idSesion) => {
   try {
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=obtener_asistencia_por_sesion&idSesion=${idSesion}`
+      `http://localhost/manejo_actas/index.php?accion=asistencia_obtener_asistencia_por_sesion&idSesion=${idSesion}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}` // Agrega el token aquí
+        }
+      }
     )
 
     if (!response.ok) throw new Error('Error al cargar los miembros invitados')
 
     const data = await response.json()
 
-    // Filtrar los miembros que están invitados
     miembrosInvitados.value = data.filter(
       (miembro) =>
         miembro.INVITACION == 1 ||
@@ -99,31 +118,94 @@ const loadMiembrosInvitados = async (idSesion) => {
 const loadInvitados = async (idSesion) => {
   try {
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=obtener_asistencia_invitados_por_sesion&idSesion=${idSesion}`
+      `http://localhost/manejo_actas/index.php?accion=asistencia_obtener_asistencia_invitados_por_sesion&idSesion=${idSesion}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}` // Agrega el token aquí
+        }
+      }
     )
 
     if (!response.ok) throw new Error('Error al cargar los invitados')
 
     const data = await response.json()
-    miembros.value = data // Asignar los datos de invitados al estado
+    miembros.value = data
   } catch (error) {
     console.error('Error al cargar los invitados:', error)
+  }
+}
+
+const actualizarAsistenciaMiembro = async (idMiembro, estadoAsistencia) => {
+  const idSesion = route.params.id
+  console.log(idMiembro, estadoAsistencia)
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=asistencia_actualizar_asistencia_miembro`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sesionId: idSesion,
+          miembroId: idMiembro,
+          estadoAsistencia: estadoAsistencia
+        })
+      }
+    )
+
+    if (!response.ok) throw new Error('Error al actualizar la asistencia del miembro')
+
+    alert('Estado de asistencia actualizado correctamente.')
+  } catch (error) {
+    console.error('Error al actualizar la asistencia del miembro:', error)
+    alert('No se pudo actualizar el estado de asistencia.')
+  }
+}
+
+const actualizarAsistenciaInvitado = async (idInvitado, estadoAsistencia) => {
+  const idSesion = route.params.id
+  console.log(idInvitado, estadoAsistencia)
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=asistencia_actualizar_asistencia_invitado`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sesionId: idSesion,
+          invitadoId: idInvitado,
+          estadoAsistencia: estadoAsistencia
+        })
+      }
+    )
+
+    if (!response.ok) throw new Error('Error al actualizar la asistencia del invitado')
+
+    alert('Estado de asistencia actualizado correctamente.')
+  } catch (error) {
+    console.error('Error al actualizar la asistencia del invitado:', error)
+    alert('No se pudo actualizar el estado de asistencia.')
   }
 }
 
 // Nueva función para invitar a los miembros
 const invitarMiembros = async () => {
   const idSesion = route.params.id
-  const dataInvitacion = {
-    idSesion: idSesion
-  }
+  const dataInvitacion = { idSesion }
 
   try {
     const response = await fetch(
-      'http://localhost/manejo_actas/index.php?accion=crear_asistencia',
+      'http://localhost/manejo_actas/index.php?accion=asistencia_crear_asistencia',
       {
         method: 'POST',
         headers: {
+          Authorization: `Bearer ${token}`, // Agrega el token aquí
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(dataInvitacion)
@@ -133,8 +215,8 @@ const invitarMiembros = async () => {
     if (!response.ok) throw new Error('Error al invitar a los miembros')
 
     const result = await response.json()
-    alert(`Miembros invitados: ${result.message}`) // Muestra un mensaje de éxito
-    await loadMiembrosInvitados(idSesion) // Recargar miembros invitados después de invitar
+    alert(`Miembros invitados: ${result.message}`)
+    await loadMiembrosInvitados(idSesion)
   } catch (error) {
     console.error('Error al invitar a los miembros:', error)
     alert('Ocurrió un error al invitar a los miembros.')
@@ -144,16 +226,15 @@ const invitarMiembros = async () => {
 // Nueva función para invitar a los invitados
 const invitarInvitados = async () => {
   const idSesion = route.params.id
-  const dataInvitacion = {
-    idSesion: idSesion
-  }
+  const dataInvitacion = { idSesion }
 
   try {
     const response = await fetch(
-      'http://localhost/manejo_actas/index.php?accion=crear_asistencia_invitados',
+      'http://localhost/manejo_actas/index.php?accion=asistencia_crear_asistencia_invitados',
       {
         method: 'POST',
         headers: {
+          Authorization: `Bearer ${token}`, // Agrega el token aquí
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(dataInvitacion)
@@ -163,15 +244,13 @@ const invitarInvitados = async () => {
     if (!response.ok) throw new Error('Error al invitar a los invitados')
 
     const result = await response.json()
-    alert(`Invitados: ${result.message}`) // Muestra un mensaje de éxito
-    await loadInvitados(idSesion) // Recargar invitados después de invitar
+    alert(`Invitados: ${result.message}`)
+    await loadInvitados(idSesion)
   } catch (error) {
     console.error('Error al invitar a los invitados:', error)
     alert('Ocurrió un error al invitar a los invitados.')
   }
 }
-
-// Restante del código...
 
 // Llamar a loadSesion al montar el componente
 loadSesion()
@@ -232,12 +311,25 @@ loadSesion()
         <tr class="bg-gray-200 text-gray-700">
           <th class="py-2 px-4 border-b">Nombre</th>
           <th class="py-2 px-4 border-b">Cargo</th>
+          <th class="py-2 px-4 border-b">Estado Asistencia</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="miembro in miembrosInvitados" :key="miembro.ID">
+        <tr v-for="miembro in miembrosInvitados" :key="miembro.MIEMBROS_IDMIEMBRO">
           <td class="py-2 px-4 border-b">{{ miembro.NOMBRE }}</td>
           <td class="py-2 px-4 border-b">{{ miembro.CARGO }}</td>
+          <td class="py-2 px-4 border-b">
+            <select
+              v-model="miembro.ESTADO_ASISTENCIA"
+              @change="
+                actualizarAsistenciaMiembro(miembro.MIEMBROS_IDMIEMBRO, miembro.ESTADO_ASISTENCIA)
+              "
+              class="input-class"
+            >
+              <option value="X">X</option>
+              <option value="-">-</option>
+            </select>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -251,12 +343,28 @@ loadSesion()
         <tr class="bg-gray-200 text-gray-700">
           <th class="py-2 px-4 border-b">Nombre</th>
           <th class="py-2 px-4 border-b">Cargo</th>
+          <th class="py-2 px-4 border-b">Estado Asistencia</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="invitado in miembros" :key="invitado.ID">
+        <tr v-for="invitado in miembros" :key="invitado.INVITADO_IDINVITADO">
           <td class="py-2 px-4 border-b">{{ invitado.NOMBRE }}</td>
           <td class="py-2 px-4 border-b">{{ invitado.CARGO }}</td>
+          <td class="py-2 px-4 border-b">
+            <select
+              v-model="invitado.ESTADO_ASISTENCIA"
+              @change="
+                actualizarAsistenciaInvitado(
+                  invitado.INVITADO_IDINVITADO,
+                  invitado.ESTADO_ASISTENCIA
+                )
+              "
+              class="input-class"
+            >
+              <option value="ASISTIO">Asistió</option>
+              <option value="NO ASISTIO">No Asistió</option>
+            </select>
+          </td>
         </tr>
       </tbody>
     </table>

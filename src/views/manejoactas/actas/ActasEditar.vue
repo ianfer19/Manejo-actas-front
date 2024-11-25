@@ -8,15 +8,30 @@ const router = useRouter()
 const acta = ref({}) // Contendrá los datos del acta
 const errorMessage = ref('') // Variable para almacenar el mensaje de error
 
+// Función para obtener el token del localStorage
+const getToken = () => {
+  return localStorage.getItem('token')
+}
+
 // Función para cargar los datos del acta
 const loadActa = async () => {
   const numActa = route.params.id
   console.log(numActa)
   errorMessage.value = '' // Reinicia el mensaje de error
   try {
+    const token = getToken()
+
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=obtener_acta_por_numero&numActa=${numActa}`
+      `http://localhost/manejo_actas/index.php?accion=acta_obtener_acta_por_numero&numActa=${numActa}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      }
     )
+
     if (!response.ok) {
       throw new Error('Error al obtener el acta')
     }
@@ -32,9 +47,12 @@ const loadActa = async () => {
 const actualizarActa = async () => {
   const num = acta.value.NUM_ACTAS
   try {
+    const token = getToken()
+
     const response = await fetch('http://localhost/manejo_actas/index.php?accion=actualizar_acta', {
       method: 'PUT',
       headers: {
+        Authorization: token ? `Bearer ${token}` : '',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
