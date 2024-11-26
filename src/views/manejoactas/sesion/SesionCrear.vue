@@ -24,12 +24,22 @@ const crearSesion = async () => {
   }
 
   try {
+    // Obtener el token del almacenamiento local (o donde lo tengas guardado)
+    const token = localStorage.getItem('token') // Ajusta según corresponda
+
+    // Verificar si el token está disponible
+    if (!token) {
+      alert('No se encontró un token de autenticación. Por favor, inicie sesión nuevamente.')
+      return router.push({ name: 'login' }) // Redirigir al inicio de sesión si no hay token
+    }
+
     const response = await fetch(
       'http://localhost/manejo_actas/index.php?accion=sesion_crear_sesion',
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` // Incluir el token en los encabezados
         },
         body: JSON.stringify(data)
       }
@@ -51,64 +61,72 @@ const crearSesion = async () => {
 </script>
 
 <template>
-  <BreadCrumb modulo="Sesiones" accion="Crear" />
+  <div class="flex">
+    <div class="flex-grow">
+      <main class="p-6">
+        <BreadCrumb modulo="Sesiones" accion="Crear" />
 
-  <div class="grid grid-cols-2 my-6 text-gray-700">
-    <h2 class="mb-1 text-4xl font-bold text-blue-700">Nueva Sesión</h2>
+        <div class="grid grid-cols-2 my-6 text-gray-700">
+          <h2 class="mb-1 text-4xl font-bold text-blue-700">Nueva Sesión</h2>
+        </div>
+
+        <div class="grid gap-6 mb-6 md:grid-cols-2">
+          <div>
+            <label for="lugar" class="block mb-2 text-sm font-medium text-gray-900">Lugar</label>
+            <input
+              v-model="lugar"
+              type="text"
+              id="lugar"
+              placeholder="Lugar de la sesión"
+              class="input-class"
+            />
+          </div>
+          <div>
+            <label for="fecha" class="block mb-2 text-sm font-medium text-gray-900">Fecha</label>
+            <input v-model="fecha" type="date" id="fecha" class="input-class" />
+          </div>
+          <div>
+            <label for="horaInicio" class="block mb-2 text-sm font-medium text-gray-900"
+              >Hora Inicio</label
+            >
+            <input v-model="horaInicio" type="time" id="horaInicio" class="input-class" />
+          </div>
+          <div>
+            <label for="horaFinal" class="block mb-2 text-sm font-medium text-gray-900"
+              >Hora Final</label
+            >
+            <input v-model="horaFinal" type="time" id="horaFinal" class="input-class" />
+          </div>
+          <div>
+            <label for="presidente" class="block mb-2 text-sm font-medium text-gray-900"
+              >Presidente</label
+            >
+            <input
+              v-model="presidente"
+              type="text"
+              id="presidente"
+              placeholder="Nombre del presidente"
+              class="input-class"
+            />
+          </div>
+          <div>
+            <label for="secretario" class="block mb-2 text-sm font-medium text-gray-900"
+              >Secretario</label
+            >
+            <input
+              v-model="secretario"
+              type="text"
+              id="secretario"
+              placeholder="Nombre del secretario"
+              class="input-class"
+            />
+          </div>
+        </div>
+
+        <button @click="crearSesion" class="boton-1">Agregar Sesión</button>
+      </main>
+    </div>
   </div>
-
-  <div class="grid gap-6 mb-6 md:grid-cols-2">
-    <div>
-      <label for="lugar" class="block mb-2 text-sm font-medium text-gray-900">Lugar</label>
-      <input
-        v-model="lugar"
-        type="text"
-        id="lugar"
-        placeholder="Lugar de la sesión"
-        class="input-class"
-      />
-    </div>
-    <div>
-      <label for="fecha" class="block mb-2 text-sm font-medium text-gray-900">Fecha</label>
-      <input v-model="fecha" type="date" id="fecha" class="input-class" />
-    </div>
-    <div>
-      <label for="horaInicio" class="block mb-2 text-sm font-medium text-gray-900"
-        >Hora Inicio</label
-      >
-      <input v-model="horaInicio" type="time" id="horaInicio" class="input-class" />
-    </div>
-    <div>
-      <label for="horaFinal" class="block mb-2 text-sm font-medium text-gray-900">Hora Final</label>
-      <input v-model="horaFinal" type="time" id="horaFinal" class="input-class" />
-    </div>
-    <div>
-      <label for="presidente" class="block mb-2 text-sm font-medium text-gray-900"
-        >Presidente</label
-      >
-      <input
-        v-model="presidente"
-        type="text"
-        id="presidente"
-        placeholder="Nombre del presidente"
-        class="input-class"
-      />
-    </div>
-    <div>
-      <label for="secretario" class="block mb-2 text-sm font-medium text-gray-900"
-        >Secretario</label
-      >
-      <input
-        v-model="secretario"
-        type="text"
-        id="secretario"
-        placeholder="Nombre del secretario"
-        class="input-class"
-      />
-    </div>
-  </div>
-
-  <button @click="crearSesion" class="boton-1">Agregar Sesión</button>
 </template>
 
 <style scoped>

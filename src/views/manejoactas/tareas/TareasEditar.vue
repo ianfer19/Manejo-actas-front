@@ -127,64 +127,77 @@ onMounted(() => {
 </script>
 
 <template>
-  <BreadCrumb modulo="Tareas" accion="Editar" />
+  <div class="flex">
+    <div class="flex-grow">
+      <main class="p-6">
+        <BreadCrumb modulo="Tareas" accion="Editar" />
 
-  <h2 class="text-4xl font-bold">Editar Tarea</h2>
+        <h2 class="text-4xl font-bold">Editar Tarea</h2>
 
-  <div class="grid gap-6 mb-6 md:grid-cols-2">
-    <div>
-      <label for="descripcion" class="block mb-2 text-sm font-medium text-gray-900"
-        >Descripción</label
-      >
-      <input type="text" id="descripcion" v-model="tarea.DESCRIPCION" class="input-field" />
-    </div>
-    <div>
-      <label for="sesion" class="block mb-2 text-sm font-medium text-gray-900">ID de Sesión</label>
-      <input type="number" id="sesion" v-model="tarea.SESION_IDSESION" class="input-field" />
-    </div>
-    <div>
-      <label for="fechaEntrega" class="block mb-2 text-sm font-medium text-gray-900"
-        >Fecha de Entrega</label
-      >
-      <input type="date" id="fechaEntrega" v-model="tarea.FECHA_ENTREGA" class="input-field" />
-    </div>
-    <div>
-      <label for="fechaVerificacion" class="block mb-2 text-sm font-medium text-gray-900"
-        >Fecha de Verificación</label
-      >
-      <input
-        type="date"
-        id="fechaVerificacion"
-        v-model="tarea.FECHA_VERIFICACION"
-        class="input-field"
-      />
+        <div class="grid gap-6 mb-6 md:grid-cols-2">
+          <div>
+            <label for="descripcion" class="block mb-2 text-sm font-medium text-gray-900"
+              >Descripción</label
+            >
+            <input type="text" id="descripcion" v-model="tarea.DESCRIPCION" class="input-field" />
+          </div>
+          <div>
+            <label for="sesion" class="block mb-2 text-sm font-medium text-gray-900"
+              >ID de Sesión</label
+            >
+            <input type="number" id="sesion" v-model="tarea.SESION_IDSESION" class="input-field" />
+          </div>
+          <div>
+            <label for="fechaEntrega" class="block mb-2 text-sm font-medium text-gray-900"
+              >Fecha de Entrega</label
+            >
+            <input
+              type="date"
+              id="fechaEntrega"
+              v-model="tarea.FECHA_ENTREGA"
+              class="input-field"
+            />
+          </div>
+          <div>
+            <label for="fechaVerificacion" class="block mb-2 text-sm font-medium text-gray-900"
+              >Fecha de Verificación</label
+            >
+            <input
+              type="date"
+              id="fechaVerificacion"
+              v-model="tarea.FECHA_VERIFICACION"
+              class="input-field"
+            />
+          </div>
+        </div>
+
+        <button @click="actualizarTarea" class="boton-1">Actualizar Tarea</button>
+
+        <h3 class="text-2xl font-bold mt-8">Miembros Asignados</h3>
+
+        <table class="min-w-full table-auto border-collapse mt-4">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="px-4 py-2 text-left">Nombre</th>
+              <th class="px-4 py-2 text-left">Cargo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="miembro in miembrosAsignados" :key="miembro.IDMIEMBRO">
+              <td class="border px-4 py-2">{{ miembro.NOMBRE }}</td>
+              <td class="border px-4 py-2">{{ miembro.CARGO }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="text-2xl font-bold mt-8">Asignar Miembro</h3>
+        <select v-model="miembroSeleccionado" class="input-field">
+          <option v-for="miembro in miembros" :key="miembro.IDMIEMBRO" :value="miembro">
+            {{ miembro.NOMBRE }} ({{ miembro.CARGO }})
+          </option>
+        </select>
+        <button @click="asignarMiembro" class="boton-1 mt-2">Asignar Miembro</button>
+      </main>
     </div>
   </div>
-
-  <button @click="actualizarTarea" class="boton-1">Actualizar Tarea</button>
-
-  <h3 class="text-2xl font-bold mt-8">Miembros Asignados</h3>
-
-  <table class="min-w-full table-auto border-collapse mt-4">
-    <thead>
-      <tr class="bg-gray-100">
-        <th class="px-4 py-2 text-left">Nombre</th>
-        <th class="px-4 py-2 text-left">Cargo</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="miembro in miembrosAsignados" :key="miembro.IDMIEMBRO">
-        <td class="border px-4 py-2">{{ miembro.NOMBRE }}</td>
-        <td class="border px-4 py-2">{{ miembro.CARGO }}</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <h3 class="text-2xl font-bold mt-8">Asignar Miembro</h3>
-  <select v-model="miembroSeleccionado" class="input-field">
-    <option v-for="miembro in miembros" :key="miembro.IDMIEMBRO" :value="miembro">
-      {{ miembro.NOMBRE }} ({{ miembro.CARGO }})
-    </option>
-  </select>
-  <button @click="asignarMiembro" class="boton-1 mt-2">Asignar Miembro</button>
 </template>

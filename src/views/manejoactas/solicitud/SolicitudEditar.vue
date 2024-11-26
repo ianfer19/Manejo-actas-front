@@ -72,127 +72,138 @@ onMounted(loadSolicitud)
 </script>
 
 <template>
-  <BreadCrumb modulo="Solicitudes" accion="Editar" />
+  <div class="flex">
+    <div class="flex-grow">
+      <main class="p-6">
+        <BreadCrumb modulo="Solicitudes" accion="Editar" />
 
-  <h2 class="text-4xl font-bold mb-6">Editar Solicitud</h2>
+        <h2 class="text-4xl font-bold mb-6">Editar Solicitud</h2>
 
-  <div class="grid gap-6 mb-6 md:grid-cols-2">
-    <div>
-      <label for="dependencia" class="block mb-2 text-sm font-medium text-gray-700"
-        >Dependencia</label
-      >
-      <input
-        type="text"
-        id="dependencia"
-        v-model="solicitud.DEPENDENCIA"
-        class="input-field"
-        placeholder="Ingrese la dependencia"
-      />
-    </div>
-    <div>
-      <label for="asunto" class="block mb-2 text-sm font-medium text-gray-700">Asunto</label>
-      <input
-        type="text"
-        id="asunto"
-        v-model="solicitud.ASUNTO"
-        class="input-field"
-        placeholder="Ingrese el asunto"
-      />
-    </div>
-    <div>
-      <label for="decision" class="block mb-2 text-sm font-medium text-gray-700">Decisión</label>
-      <input
-        type="text"
-        id="decision"
-        v-model="solicitud.DESICION"
-        class="input-field"
-        placeholder="Ingrese la decisión"
-      />
-    </div>
-    <div>
-      <label for="fecha" class="block mb-2 text-sm font-medium text-gray-700"
-        >Fecha de Solicitud</label
-      >
-      <input type="date" id="fecha" v-model="solicitud.FECHADESOLICITUD" class="input-field" />
-    </div>
-    <div>
-      <label for="solicitante" class="block mb-2 text-sm font-medium text-gray-700"
-        >ID del Solicitante</label
-      >
-      <input
-        type="number"
-        id="solicitante"
-        v-model="solicitud.SOLICITANTE_IDSOLICITANTE"
-        class="input-field"
-        placeholder="Ingrese el ID del solicitante"
-        readonly
-      />
-    </div>
-    <div>
-      <label for="sesion" class="block mb-2 text-sm font-medium text-gray-700">ID de Sesión</label>
-      <input
-        type="number"
-        id="sesion"
-        v-model="solicitud.SESION_IDSESION"
-        class="input-field"
-        placeholder="Ingrese el ID de sesión"
-        readonly
-      />
-    </div>
-    <div>
-      <label for="descripcion" class="block mb-2 text-sm font-medium text-gray-700"
-        >ID de Descripción</label
-      >
-      <input
-        type="number"
-        id="descripcion"
-        v-model="solicitud.DESCRIPCION_IDDESCRIPCION"
-        class="input-field"
-        placeholder="Ingrese el ID de descripción"
-        readonly
-      />
-    </div>
-    <div>
-      <label for="descripcion_sesion" class="block mb-2 text-sm font-medium text-gray-700"
-        >Descripción de Sesión</label
-      >
+        <div>
+          <label for="dependencia" class="block mb-2 text-sm font-medium text-gray-700"
+            >Dependencia</label
+          >
+          <input
+            type="text"
+            id="dependencia"
+            v-model="solicitud.DEPENDENCIA"
+            class="input-field"
+            placeholder="Ingrese la dependencia"
+          />
+        </div>
+        <div>
+          <label for="asunto" class="block mb-2 text-sm font-medium text-gray-700">Asunto</label>
+          <input
+            type="text"
+            id="asunto"
+            v-model="solicitud.ASUNTO"
+            class="input-field"
+            placeholder="Ingrese el asunto"
+          />
+        </div>
+        <div>
+          <label for="decision" class="block mb-2 text-sm font-medium text-gray-700"
+            >Decisión</label
+          >
+          <input
+            type="text"
+            id="decision"
+            v-model="solicitud.DESICION"
+            class="input-field"
+            placeholder="Ingrese la decisión"
+          />
+        </div>
+        <div>
+          <label for="fecha" class="block mb-2 text-sm font-medium text-gray-700"
+            >Fecha de Solicitud</label
+          >
+          <input type="date" id="fecha" v-model="solicitud.FECHADESOLICITUD" class="input-field" />
+        </div>
+        <div>
+          <label for="solicitante" class="block mb-2 text-sm font-medium text-gray-700"
+            >ID del Solicitante</label
+          >
+          <input
+            type="number"
+            id="solicitante"
+            v-model="solicitud.SOLICITANTE_IDSOLICITANTE"
+            class="input-field"
+            placeholder="Ingrese el ID del solicitante"
+            readonly
+          />
+        </div>
+        <div>
+          <label for="sesion" class="block mb-2 text-sm font-medium text-gray-700"
+            >ID de Sesión</label
+          >
+          <input
+            type="number"
+            id="sesion"
+            v-model="solicitud.SESION_IDSESION"
+            class="input-field"
+            placeholder="Ingrese el ID de sesión"
+            readonly
+          />
+        </div>
+        <div>
+          <label for="descripcion" class="block mb-2 text-sm font-medium text-gray-700"
+            >ID de Descripción</label
+          >
+          <input
+            type="number"
+            id="descripcion"
+            v-model="solicitud.DESCRIPCION_IDDESCRIPCION"
+            class="input-field"
+            placeholder="Ingrese el ID de descripción"
+            readonly
+          />
+        </div>
+        <div>
+          <label for="descripcion_sesion" class="block mb-2 text-sm font-medium text-gray-700"
+            >Descripción de Sesión</label
+          >
 
-      <p class="detail-value">{{ solicitud.descripcion_sesion }}</p>
-    </div>
-    <div>
-      <label for="evento_descripcion" class="block mb-2 text-sm font-medium text-gray-700"
-        >Evento</label
-      >
-      <input
-        type="text"
-        id="evento_descripcion"
-        v-model="solicitud.evento_descripcion"
-        class="input-field"
-        placeholder="Evento"
-        readonly
-      />
-    </div>
-    <div>
-      <label for="nombre_solicitante" class="block mb-2 text-sm font-medium text-gray-700"
-        >Nombre del Solicitante</label
-      >
-      <input
-        type="text"
-        id="nombre_solicitante"
-        v-model="solicitud.nombre_solicitante"
-        class="input-field"
-        placeholder="Nombre del solicitante"
-        readonly
-      />
+          <p class="detail-value block mb-2 text-sm font-medium text-gray-700">
+            {{ solicitud.descripcion_sesion }}
+          </p>
+        </div>
+        <div>
+          <label for="evento_descripcion" class="block mb-2 text-sm font-medium text-gray-700"
+            >Evento</label
+          >
+          <input
+            type="text"
+            id="evento_descripcion"
+            v-model="solicitud.evento_descripcion"
+            class="input-field"
+            placeholder="Evento"
+            readonly
+          />
+        </div>
+        <div>
+          <label for="nombre_solicitante" class="block mb-2 text-sm font-medium text-gray-700"
+            >Nombre del Solicitante</label
+          >
+          <input
+            type="text"
+            id="nombre_solicitante"
+            v-model="solicitud.nombre_solicitante"
+            class="input-field"
+            placeholder="Nombre del solicitante"
+            readonly
+          />
+        </div>
+
+        <button
+          @click="actualizarSolicitud"
+          class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+          style="margin-top: 20px"
+        >
+          Actualizar Solicitud
+        </button>
+      </main>
     </div>
   </div>
-
-  <button
-    @click="actualizarSolicitud"
-    class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
-  >
-    Actualizar Solicitud
-  </button>
 </template>
 
 <style>

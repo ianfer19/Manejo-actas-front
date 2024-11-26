@@ -79,29 +79,35 @@ const updateSolicitante = async () => {
 </script>
 
 <template>
-  <BreadCrumb modulo="Solicitantes" accion="Editar" />
+  <div class="flex">
+    <div class="flex-grow">
+      <main class="p-6">
+        <BreadCrumb modulo="Solicitantes" accion="Editar" />
 
-  <h2 class="text-2xl font-bold">Editar Solicitante</h2>
+        <h2 class="text-2xl font-bold">Editar Solicitante</h2>
 
-  <div>
-    <label for="nombre">Nombre</label>
-    <input type="text" v-model="solicitante.NOMBRE" />
+        <div>
+          <label for="nombre">Nombre</label>
+          <input type="text" v-model="solicitante.NOMBRE" />
+        </div>
+
+        <div>
+          <label for="tipo">Tipo de Solicitante</label>
+          <input type="text" v-model="solicitante.TIPODESOLICITANTE" />
+        </div>
+
+        <div>
+          <label for="email">Email</label>
+          <input type="email" v-model="solicitante.EMAIL" />
+        </div>
+
+        <div>
+          <label for="celular">Celular</label>
+          <input type="text" v-model="solicitante.CELULAR" />
+        </div>
+
+        <button @click="updateSolicitante" class="boton-1">Guardar Cambios</button>
+      </main>
+    </div>
   </div>
-
-  <div>
-    <label for="tipo">Tipo de Solicitante</label>
-    <input type="text" v-model="solicitante.TIPODESOLICITANTE" />
-  </div>
-
-  <div>
-    <label for="email">Email</label>
-    <input type="email" v-model="solicitante.EMAIL" />
-  </div>
-
-  <div>
-    <label for="celular">Celular</label>
-    <input type="text" v-model="solicitante.CELULAR" />
-  </div>
-
-  <button @click="updateSolicitante" class="boton-1">Guardar Cambios</button>
 </template>

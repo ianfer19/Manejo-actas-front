@@ -9,7 +9,6 @@ import tareasRoutes from './tareas'
 import actasRoutes from './actas'
 import authRoutes from './auth'
 import AuthLayout from '../components/layouts/AuthLayout.vue' // Layout para el login y autenticación
-import MainLayout from '../components/layouts/MainLayout.vue' // Layout para páginas con Header y Sidebar
 
 const routes = [
   {
@@ -22,7 +21,6 @@ const routes = [
   },
   {
     path: '/',
-    component: () => import('../components/layouts/MainLayout.vue'), // Página principal con contenido
     children: [
       ...invitadosRoutes,
       ...miembrosRoutes,

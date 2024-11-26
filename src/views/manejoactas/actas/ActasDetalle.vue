@@ -1,175 +1,181 @@
 <template>
-  <div class="acta-detalle">
-    <div class="boton-container">
-      <button @click="generatePDF" class="btn-verde">Descargar PDF</button>
-      <button @click="abrirModalOrden" class="btn-verde">Agregar Orden del Día</button>
-    </div>
+  <div class="flex">
+    <div class="flex-grow">
+      <main class="p-6">
+        <div class="acta-detalle">
+          <div class="boton-container">
+            <button @click="generatePDF" class="btn-verde">Descargar PDF</button>
+            <button @click="abrirModalOrden" class="btn-verde">Agregar Orden del Día</button>
+          </div>
 
-    <!-- Contenedor a convertir en PDF -->
-    <div ref="pdfContent">
-      <!-- Página 1: Acta, Sesión, Tema, Miembros -->
-      <div class="pdf-page">
-        <img :src="plantillaInicio" alt="Plantilla Inicio" class="encabezado" />
-        <div class="page-content">
-          <!-- Tabla de Acta -->
-          <table>
-            <thead>
-              <tr>
-                <th>Número de Acta</th>
-                <th>Estado</th>
-                <th>ID Sesión</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{{ acta.NUM_ACTAS }}</td>
-                <td>{{ acta.ESTADO }}</td>
-                <td>{{ acta.SESION_IDSESION }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <!-- Contenedor a convertir en PDF -->
+          <div ref="pdfContent">
+            <!-- Página 1: Acta, Sesión, Tema, Miembros -->
+            <div class="pdf-page">
+              <img :src="plantillaInicio" alt="Plantilla Inicio" class="encabezado" />
+              <div class="page-content">
+                <!-- Tabla de Acta -->
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Número de Acta</th>
+                      <th>Estado</th>
+                      <th>ID Sesión</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ acta.NUM_ACTAS }}</td>
+                      <td>{{ acta.ESTADO }}</td>
+                      <td>{{ acta.SESION_IDSESION }}</td>
+                    </tr>
+                  </tbody>
+                </table>
 
-          <!-- Tabla de Sesión -->
-          <table>
-            <thead>
-              <tr>
-                <th>Lugar</th>
-                <th>Fecha</th>
-                <th>Hora Inicio</th>
-                <th>Hora Final</th>
-                <th>Presidente</th>
-                <th>Secretario</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{{ sesion.LUGAR }}</td>
-                <td>{{ sesion.FECHA }}</td>
-                <td>{{ formatTime(sesion.HORAINICIO) }}</td>
-                <td>{{ formatTime(sesion.HORAFINAL) }}</td>
-                <td>{{ sesion.PRESIDENTE }}</td>
-                <td>{{ sesion.SECRETARIO }}</td>
-              </tr>
-            </tbody>
-          </table>
+                <!-- Tabla de Sesión -->
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Lugar</th>
+                      <th>Fecha</th>
+                      <th>Hora Inicio</th>
+                      <th>Hora Final</th>
+                      <th>Presidente</th>
+                      <th>Secretario</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ sesion.LUGAR }}</td>
+                      <td>{{ sesion.FECHA }}</td>
+                      <td>{{ formatTime(sesion.HORAINICIO) }}</td>
+                      <td>{{ formatTime(sesion.HORAFINAL) }}</td>
+                      <td>{{ sesion.PRESIDENTE }}</td>
+                      <td>{{ sesion.SECRETARIO }}</td>
+                    </tr>
+                  </tbody>
+                </table>
 
-          <table>
-            <thead>
-              <tr>
-                <th>TEMA</th>
-                <th>DESCRIPCION</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{{ sesion.TEMA }}</td>
-                <td>{{ sesion.DESCRIPCION }}</td>
-              </tr>
-            </tbody>
-          </table>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>TEMA</th>
+                      <th>DESCRIPCION</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ sesion.TEMA }}</td>
+                      <td>{{ sesion.DESCRIPCION }}</td>
+                    </tr>
+                  </tbody>
+                </table>
 
-          <table>
-            <thead>
-              <tr>
-                <th>ID Miembro</th>
-                <th>Nombre</th>
-                <th>Cargo</th>
-                <th>Estado Asistencia</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="miembro in miembrosAsistentes" :key="miembro.IDMIEMBRO">
-                <td>{{ miembro.IDMIEMBRO }}</td>
-                <td>{{ miembro.NOMBRE }}</td>
-                <td>{{ miembro.CARGO }}</td>
-                <td>{{ miembro.ESTADO_ASISTENCIA }}</td>
-              </tr>
-            </tbody>
-          </table>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID Miembro</th>
+                      <th>Nombre</th>
+                      <th>Cargo</th>
+                      <th>Estado Asistencia</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="miembro in miembrosAsistentes" :key="miembro.IDMIEMBRO">
+                      <td>{{ miembro.IDMIEMBRO }}</td>
+                      <td>{{ miembro.NOMBRE }}</td>
+                      <td>{{ miembro.CARGO }}</td>
+                      <td>{{ miembro.ESTADO_ASISTENCIA }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <img :src="plantillaFin" alt="Plantilla Fin" class="pie" />
+            </div>
+
+            <!-- Página 2: Invitados y Proposiciones -->
+            <div class="pdf-page">
+              <img :src="plantillaInicio" alt="Plantilla Inicio" class="encabezado" />
+              <div class="page-content">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID Invitado</th>
+                      <th>Nombre</th>
+                      <th>Dependencia</th>
+                      <th>Cargo</th>
+                      <th>Estado Asistencia</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="invitado in invitadosAsistentes" :key="invitado.IDINVITADOS">
+                      <td>{{ invitado.IDINVITADOS }}</td>
+                      <td>{{ invitado.NOMBRE }}</td>
+                      <td>{{ invitado.DEPENDENCIA }}</td>
+                      <td>{{ invitado.CARGO }}</td>
+                      <td>{{ invitado.ESTADO_ASISTENCIA }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Tabla de Órdenes del Día -->
+                <div class="table-title">Órdenes del Día</div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID Orden</th>
+                      <th>Descripción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="orden in ordenDelDia" :key="orden.ID_ORDEN">
+                      <td>{{ orden.ID_ORDEN }}</td>
+                      <td>{{ orden.DESCRIPCION }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Tabla de Proposiciones -->
+              <table>
+                <thead>
+                  <tr>
+                    <th>Descripción</th>
+                    <th>Decisión</th>
+                    <th>Miembro</th>
+                    <th>ID Sesión</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="proposicion in proposiciones" :key="proposicion.ID_PROPOSICIONES">
+                    <td>{{ proposicion.DESCRIPCION }}</td>
+                    <td>{{ proposicion.DESICION }}</td>
+                    <td>{{ proposicion.NOMBRE_MIEMBRO }}</td>
+                    <td>{{ proposicion.SESION_IDSESION }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <img :src="plantillaFin" alt="Plantilla Fin" class="pie" />
+          </div>
+
+          <!-- Modal para agregar Orden del Día -->
+          <div v-if="mostrarModalOrden" class="modal-overlay">
+            <div class="modal">
+              <h3>Agregar Orden del Día</h3>
+              <textarea
+                v-model="nuevaOrden.DESCRIPCION"
+                placeholder="Escribe la descripción de la nueva orden..."
+                rows="4"
+              ></textarea>
+              <div class="modal-actions">
+                <button class="btn-verde" @click="agregarOrdenDia">Guardar</button>
+                <button class="btn-rojo" @click="cerrarModalOrden">Cancelar</button>
+              </div>
+            </div>
+          </div>
         </div>
-        <img :src="plantillaFin" alt="Plantilla Fin" class="pie" />
-      </div>
-
-      <!-- Página 2: Invitados y Proposiciones -->
-      <div class="pdf-page">
-        <img :src="plantillaInicio" alt="Plantilla Inicio" class="encabezado" />
-        <div class="page-content">
-          <table>
-            <thead>
-              <tr>
-                <th>ID Invitado</th>
-                <th>Nombre</th>
-                <th>Dependencia</th>
-                <th>Cargo</th>
-                <th>Estado Asistencia</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="invitado in invitadosAsistentes" :key="invitado.IDINVITADOS">
-                <td>{{ invitado.IDINVITADOS }}</td>
-                <td>{{ invitado.NOMBRE }}</td>
-                <td>{{ invitado.DEPENDENCIA }}</td>
-                <td>{{ invitado.CARGO }}</td>
-                <td>{{ invitado.ESTADO_ASISTENCIA }}</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <!-- Tabla de Órdenes del Día -->
-          <div class="table-title">Órdenes del Día</div>
-          <table>
-            <thead>
-              <tr>
-                <th>ID Orden</th>
-                <th>Descripción</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="orden in ordenDelDia" :key="orden.ID_ORDEN">
-                <td>{{ orden.ID_ORDEN }}</td>
-                <td>{{ orden.DESCRIPCION }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Tabla de Proposiciones -->
-        <table>
-          <thead>
-            <tr>
-              <th>Descripción</th>
-              <th>Decisión</th>
-              <th>Miembro</th>
-              <th>ID Sesión</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="proposicion in proposiciones" :key="proposicion.ID_PROPOSICIONES">
-              <td>{{ proposicion.DESCRIPCION }}</td>
-              <td>{{ proposicion.DESICION }}</td>
-              <td>{{ proposicion.NOMBRE_MIEMBRO }}</td>
-              <td>{{ proposicion.SESION_IDSESION }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <img :src="plantillaFin" alt="Plantilla Fin" class="pie" />
-    </div>
-
-    <!-- Modal para agregar Orden del Día -->
-    <div v-if="mostrarModalOrden" class="modal-overlay">
-      <div class="modal">
-        <h3>Agregar Orden del Día</h3>
-        <textarea
-          v-model="nuevaOrden.DESCRIPCION"
-          placeholder="Escribe la descripción de la nueva orden..."
-          rows="4"
-        ></textarea>
-        <div class="modal-actions">
-          <button class="btn-verde" @click="agregarOrdenDia">Guardar</button>
-          <button class="btn-rojo" @click="cerrarModalOrden">Cancelar</button>
-        </div>
-      </div>
+      </main>
     </div>
   </div>
 </template>

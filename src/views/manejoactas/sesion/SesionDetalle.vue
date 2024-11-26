@@ -130,61 +130,69 @@ loadSesion()
 </script>
 
 <template>
-  <BreadCrumb modulo="Sesiones" accion="Detalle" />
+  <div class="flex">
+    <div class="flex-grow">
+      <main class="p-6">
+        <BreadCrumb modulo="Sesiones" accion="Detalle" />
 
-  <h2 class="text-2xl font-bold">Detalles de la Sesión</h2>
+        <h2 class="text-2xl font-bold">Detalles de la Sesión</h2>
 
-  <div class="my-6">
-    <h3 class="mb-2 text-lg font-bold">Información de la Sesión</h3>
-    <p><strong>Lugar:</strong> {{ sesion.LUGAR }}</p>
-    <p><strong>Fecha Inicio:</strong> {{ sesion.FECHA }}</p>
-    <p><strong>Hora Inicio:</strong> {{ sesion.HORAINICIO }}</p>
-    <p><strong>Hora Final:</strong> {{ sesion.HORAFINAL }}</p>
-    <p><strong>Presidente:</strong> {{ sesion.PRESIDENTE }}</p>
-    <p><strong>Secretario:</strong> {{ sesion.SECRETARIO }}</p>
+        <div class="my-6">
+          <h3 class="mb-2 text-lg font-bold">Información de la Sesión</h3>
+          <p><strong>Lugar:</strong> {{ sesion.LUGAR }}</p>
+          <p><strong>Fecha Inicio:</strong> {{ sesion.FECHA }}</p>
+          <p><strong>Hora Inicio:</strong> {{ sesion.HORAINICIO }}</p>
+          <p><strong>Hora Final:</strong> {{ sesion.HORAFINAL }}</p>
+          <p><strong>Presidente:</strong> {{ sesion.PRESIDENTE }}</p>
+          <p><strong>Secretario:</strong> {{ sesion.SECRETARIO }}</p>
+        </div>
+
+        <div class="my-6">
+          <h3 class="mb-2 text-lg font-bold">Miembros Invitados</h3>
+          <table class="min-w-full bg-white border border-gray-200">
+            <thead>
+              <tr class="bg-gray-200 text-gray-700">
+                <th class="py-2 px-4 border-b">Nombre</th>
+                <th class="py-2 px-4 border-b">Cargo</th>
+                <th class="py-2 px-4 border-b">Estado Asistencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="miembro in miembrosInvitados" :key="miembro.ID">
+                <td class="py-2 px-4 border-b">{{ miembro.NOMBRE }}</td>
+                <td class="py-2 px-4 border-b">{{ miembro.CARGO }}</td>
+                <td class="py-2 px-4 border-b">{{ miembro.ESTADO_ASISTENCIA }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="my-6">
+          <h3 class="mb-2 text-lg font-bold">Invitados</h3>
+          <table class="min-w-full bg-white border border-gray-200">
+            <thead>
+              <tr class="bg-gray-200 text-gray-700">
+                <th class="py-2 px-4 border-b">Nombre</th>
+                <th class="py-2 px-4 border-b">Cargo</th>
+                <th class="py-2 px-4 border-b">Asistencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="invitado in miembros" :key="invitado.ID">
+                <td class="py-2 px-4 border-b">{{ invitado.NOMBRE }}</td>
+                <td class="py-2 px-4 border-b">{{ invitado.CARGO }}</td>
+                <td class="py-2 px-4 border-b">{{ invitado.ESTADO_ASISTENCIA }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <button @click="crearActa" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
+          Crear Acta
+        </button>
+      </main>
+    </div>
   </div>
-
-  <div class="my-6">
-    <h3 class="mb-2 text-lg font-bold">Miembros Invitados</h3>
-    <table class="min-w-full bg-white border border-gray-200">
-      <thead>
-        <tr class="bg-gray-200 text-gray-700">
-          <th class="py-2 px-4 border-b">Nombre</th>
-          <th class="py-2 px-4 border-b">Cargo</th>
-          <th class="py-2 px-4 border-b">Estado Asistencia</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="miembro in miembrosInvitados" :key="miembro.ID">
-          <td class="py-2 px-4 border-b">{{ miembro.NOMBRE }}</td>
-          <td class="py-2 px-4 border-b">{{ miembro.CARGO }}</td>
-          <td class="py-2 px-4 border-b">{{ miembro.ESTADO_ASISTENCIA }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="my-6">
-    <h3 class="mb-2 text-lg font-bold">Invitados</h3>
-    <table class="min-w-full bg-white border border-gray-200">
-      <thead>
-        <tr class="bg-gray-200 text-gray-700">
-          <th class="py-2 px-4 border-b">Nombre</th>
-          <th class="py-2 px-4 border-b">Cargo</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="invitado in miembros" :key="invitado.ID">
-          <td class="py-2 px-4 border-b">{{ invitado.NOMBRE }}</td>
-          <td class="py-2 px-4 border-b">{{ invitado.CARGO }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <button @click="crearActa" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
-    Crear Acta
-  </button>
 </template>
 
 <style scoped>

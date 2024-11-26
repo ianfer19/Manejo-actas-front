@@ -257,121 +257,134 @@ loadSesion()
 </script>
 
 <template>
-  <BreadCrumb modulo="Sesiones" accion="Editar" />
+  <div class="flex">
+    <div class="flex-grow">
+      <main class="p-6">
+        <BreadCrumb modulo="Sesiones" accion="Editar" />
 
-  <div class="grid grid-cols-2 my-6 text-gray-700">
-    <h2 class="mb-1 text-4xl font-bold text-blue-700">Editar Sesión</h2>
-  </div>
+        <div class="grid grid-cols-2 my-6 text-gray-700">
+          <h2 class="mb-1 text-4xl font-bold text-blue-700">Editar Sesión</h2>
+        </div>
 
-  <div class="grid gap-6 mb-6 md:grid-cols-2">
-    <div>
-      <label for="lugar" class="block mb-2 text-sm font-medium text-gray-900">Lugar</label>
-      <input v-model="lugar" type="text" id="lugar" class="input-class" />
-    </div>
-    <div>
-      <label for="fecha" class="block mb-2 text-sm font-medium text-gray-900">Fecha</label>
-      <input v-model="fecha" type="date" id="fecha" class="input-class" />
-    </div>
-    <div>
-      <label for="horaInicio" class="block mb-2 text-sm font-medium text-gray-900"
-        >Hora Inicio</label
-      >
-      <input v-model="horaInicio" type="time" id="horaInicio" class="input-class" />
-    </div>
-    <div>
-      <label for="horaFinal" class="block mb-2 text-sm font-medium text-gray-900">Hora Final</label>
-      <input v-model="horaFinal" type="time" id="horaFinal" class="input-class" />
-    </div>
-    <div>
-      <label for="presidente" class="block mb-2 text-sm font-medium text-gray-900"
-        >Presidente</label
-      >
-      <input v-model="presidente" type="text" id="presidente" class="input-class" />
-    </div>
-    <div>
-      <label for="secretario" class="block mb-2 text-sm font-medium text-gray-900"
-        >Secretario</label
-      >
-      <input v-model="secretario" type="text" id="secretario" class="input-class" />
-    </div>
-  </div>
-
-  <div class="my-6">
-    <h3 class="mb-2 text-lg font-bold">Contenido de la Sesión</h3>
-    <label for="tema" class="block mb-2 text-sm font-medium text-gray-900">Tema</label>
-    <input v-model="tema" type="text" id="tema" class="input-class" />
-    <label for="contenido" class="block mb-2 text-sm font-medium text-gray-900">Descripción</label>
-    <textarea v-model="contenido" id="contenido" class="input-class"></textarea>
-  </div>
-
-  <div class="my-6">
-    <h3 class="mb-2 text-lg font-bold">Miembros Invitados</h3>
-    <table class="min-w-full bg-white border border-gray-200">
-      <thead>
-        <tr class="bg-gray-200 text-gray-700">
-          <th class="py-2 px-4 border-b">Nombre</th>
-          <th class="py-2 px-4 border-b">Cargo</th>
-          <th class="py-2 px-4 border-b">Estado Asistencia</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="miembro in miembrosInvitados" :key="miembro.MIEMBROS_IDMIEMBRO">
-          <td class="py-2 px-4 border-b">{{ miembro.NOMBRE }}</td>
-          <td class="py-2 px-4 border-b">{{ miembro.CARGO }}</td>
-          <td class="py-2 px-4 border-b">
-            <select
-              v-model="miembro.ESTADO_ASISTENCIA"
-              @change="
-                actualizarAsistenciaMiembro(miembro.MIEMBROS_IDMIEMBRO, miembro.ESTADO_ASISTENCIA)
-              "
-              class="input-class"
+        <div class="grid gap-6 mb-6 md:grid-cols-2">
+          <div>
+            <label for="lugar" class="block mb-2 text-sm font-medium text-gray-900">Lugar</label>
+            <input v-model="lugar" type="text" id="lugar" class="input-class" />
+          </div>
+          <div>
+            <label for="fecha" class="block mb-2 text-sm font-medium text-gray-900">Fecha</label>
+            <input v-model="fecha" type="date" id="fecha" class="input-class" />
+          </div>
+          <div>
+            <label for="horaInicio" class="block mb-2 text-sm font-medium text-gray-900"
+              >Hora Inicio</label
             >
-              <option value="X">X</option>
-              <option value="-">-</option>
-            </select>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <button class="boton-1" @click="invitarMiembros">Invitar Miembros</button>
-  </div>
-
-  <div class="my-6">
-    <h3 class="mb-2 text-lg font-bold">Invitados</h3>
-    <table class="min-w-full bg-white border border-gray-200">
-      <thead>
-        <tr class="bg-gray-200 text-gray-700">
-          <th class="py-2 px-4 border-b">Nombre</th>
-          <th class="py-2 px-4 border-b">Cargo</th>
-          <th class="py-2 px-4 border-b">Estado Asistencia</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="invitado in miembros" :key="invitado.INVITADO_IDINVITADO">
-          <td class="py-2 px-4 border-b">{{ invitado.NOMBRE }}</td>
-          <td class="py-2 px-4 border-b">{{ invitado.CARGO }}</td>
-          <td class="py-2 px-4 border-b">
-            <select
-              v-model="invitado.ESTADO_ASISTENCIA"
-              @change="
-                actualizarAsistenciaInvitado(
-                  invitado.INVITADO_IDINVITADO,
-                  invitado.ESTADO_ASISTENCIA
-                )
-              "
-              class="input-class"
+            <input v-model="horaInicio" type="time" id="horaInicio" class="input-class" />
+          </div>
+          <div>
+            <label for="horaFinal" class="block mb-2 text-sm font-medium text-gray-900"
+              >Hora Final</label
             >
-              <option value="ASISTIO">Asistió</option>
-              <option value="NO ASISTIO">No Asistió</option>
-            </select>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <button class="boton-1" @click="invitarInvitados">Invitar Invitados</button>
-  </div>
+            <input v-model="horaFinal" type="time" id="horaFinal" class="input-class" />
+          </div>
+          <div>
+            <label for="presidente" class="block mb-2 text-sm font-medium text-gray-900"
+              >Presidente</label
+            >
+            <input v-model="presidente" type="text" id="presidente" class="input-class" />
+          </div>
+          <div>
+            <label for="secretario" class="block mb-2 text-sm font-medium text-gray-900"
+              >Secretario</label
+            >
+            <input v-model="secretario" type="text" id="secretario" class="input-class" />
+          </div>
+        </div>
 
-  <div class="flex justify-end">
-    <button class="boton-1">Guardar Cambios</button>
+        <div class="my-6">
+          <h3 class="mb-2 text-lg font-bold">Contenido de la Sesión</h3>
+          <label for="tema" class="block mb-2 text-sm font-medium text-gray-900">Tema</label>
+          <input v-model="tema" type="text" id="tema" class="input-class" />
+          <label for="contenido" class="block mb-2 text-sm font-medium text-gray-900"
+            >Descripción</label
+          >
+          <textarea v-model="contenido" id="contenido" class="input-class"></textarea>
+        </div>
+
+        <div class="my-6">
+          <h3 class="mb-2 text-lg font-bold">Miembros Invitados</h3>
+          <table class="min-w-full bg-white border border-gray-200">
+            <thead>
+              <tr class="bg-gray-200 text-gray-700">
+                <th class="py-2 px-4 border-b">Nombre</th>
+                <th class="py-2 px-4 border-b">Cargo</th>
+                <th class="py-2 px-4 border-b">Estado Asistencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="miembro in miembrosInvitados" :key="miembro.MIEMBROS_IDMIEMBRO">
+                <td class="py-2 px-4 border-b">{{ miembro.NOMBRE }}</td>
+                <td class="py-2 px-4 border-b">{{ miembro.CARGO }}</td>
+                <td class="py-2 px-4 border-b">
+                  <select
+                    v-model="miembro.ESTADO_ASISTENCIA"
+                    @change="
+                      actualizarAsistenciaMiembro(
+                        miembro.MIEMBROS_IDMIEMBRO,
+                        miembro.ESTADO_ASISTENCIA
+                      )
+                    "
+                    class="input-class"
+                  >
+                    <option value="X">X</option>
+                    <option value="-">-</option>
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <button class="boton-1" @click="invitarMiembros">Invitar Miembros</button>
+        </div>
+
+        <div class="my-6">
+          <h3 class="mb-2 text-lg font-bold">Invitados</h3>
+          <table class="min-w-full bg-white border border-gray-200">
+            <thead>
+              <tr class="bg-gray-200 text-gray-700">
+                <th class="py-2 px-4 border-b">Nombre</th>
+                <th class="py-2 px-4 border-b">Cargo</th>
+                <th class="py-2 px-4 border-b">Estado Asistencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="invitado in miembros" :key="invitado.INVITADO_IDINVITADO">
+                <td class="py-2 px-4 border-b">{{ invitado.NOMBRE }}</td>
+                <td class="py-2 px-4 border-b">{{ invitado.CARGO }}</td>
+                <td class="py-2 px-4 border-b">
+                  <select
+                    v-model="invitado.ESTADO_ASISTENCIA"
+                    @change="
+                      actualizarAsistenciaInvitado(
+                        invitado.INVITADO_IDINVITADO,
+                        invitado.ESTADO_ASISTENCIA
+                      )
+                    "
+                    class="input-class"
+                  >
+                    <option value="ASISTIO">Asistió</option>
+                    <option value="NO ASISTIO">No Asistió</option>
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <button class="boton-1" @click="invitarInvitados">Invitar Invitados</button>
+        </div>
+
+        <div class="flex justify-end">
+          <button class="boton-1">Guardar Cambios</button>
+        </div>
+      </main>
+    </div>
   </div>
 </template>

@@ -44,13 +44,26 @@ const loadProposicion = async () => {
   }
 }
 
-// Actualizar la proposición en la base de datos
 const updateProposicion = async () => {
   try {
     const token = obtenerToken() // Obtener el token JWT
+
+    console.log(proposicion.value)
+
+    // Mapear las claves del objeto `proposicion` a las que espera el servidor
+    const data = {
+      idProposicion: proposicion.value.ID_PROPOSICIONES, // Enviar id en el cuerpo
+      descripcion: proposicion.value.DESCRIPCION,
+      decision: proposicion.value.DESICION,
+      miembroId: proposicion.value.MIEMBRO_IDMIEMBRO,
+      sesionId: proposicion.value.SESION_IDSESION
+    }
+
+    console.log('DATA', data)
+
     const response = await axios.put(
-      `http://localhost/manejo_actas/index.php?accion=proposicion_actualizar_proposicion&id=${proposicion.value.id}`,
-      proposicion.value,
+      `http://localhost/manejo_actas/index.php?accion=proposicion_actualizar_proposicion`, // El id ya no está en la URL
+      data, // Enviar los datos en el cuerpo
       {
         headers: {
           'Content-Type': 'application/json',
@@ -58,6 +71,7 @@ const updateProposicion = async () => {
         }
       }
     )
+
     if (response.status === 200) {
       alert('Proposición actualizada correctamente')
       router.push({ name: 'proposiciones-lista' }) // Redirige a la lista de proposiciones
@@ -77,24 +91,49 @@ onMounted(() => {
 </script>
 
 <template>
-  <BreadCrumb modulo="Proposiciones" accion="Editar" />
+  <div class="flex">
+    <div class="flex-grow">
+      <main class="p-6">
+        <BreadCrumb modulo="Proposiciones" accion="Editar" />
 
-  <h2 class="text-2xl font-bold">Editar Proposición</h2>
-  <div>
-    <label for="descripcion">Descripción</label>
-    <input type="text" v-model="proposicion.DESCRIPCION" />
+        <h2 class="text-2xl font-bold">Editar Proposición</h2>
+        <div>
+          <label for="descripcion">Descripción</label>
+          <input type="text" v-model="proposicion.DESCRIPCION" />
+        </div>
+        <div>
+          <label for="decision">Decisión</label>
+          <input type="text" v-model="proposicion.DESICION" />
+        </div>
+        <div>
+          <label for="miembroId">ID Miembro</label>
+          <input type="number" v-model="proposicion.MIEMBRO_IDMIEMBRO" />
+        </div>
+        <div>
+          <label for="sesionId">ID Sesión</label>
+          <input type="number" v-model="proposicion.SESION_IDSESION" />
+        </div>
+        <button @click="updateProposicion" class="boton-1">Guardar Cambios</button>
+      </main>
+    </div>
   </div>
-  <div>
-    <label for="decision">Decisión</label>
-    <input type="text" v-model="proposicion.DESICION" />
-  </div>
-  <div>
-    <label for="miembroId">ID Miembro</label>
-    <input type="number" v-model="proposicion.MIEMBRO_IDMIEMBRO" />
-  </div>
-  <div>
-    <label for="sesionId">ID Sesión</label>
-    <input type="number" v-model="proposicion.SESION_IDSESION" />
-  </div>
-  <button @click="updateProposicion" class="boton-1">Guardar Cambios</button>
 </template>
+<style>
+.input-field {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  width: 100%;
+}
+.boton-1 {
+  background-color: #4caf50;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+.boton-1:hover {
+  background-color: #45a049;
+}
+</style>

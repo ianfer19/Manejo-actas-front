@@ -70,71 +70,84 @@ onMounted(loadSolicitudes)
 </script>
 
 <template>
-  <BreadCrumb modulo="Solicitudes" accion="Lista" />
+  <div class="flex">
+    <div class="flex-grow">
+      <main class="p-6">
+        <BreadCrumb modulo="Solicitudes" accion="Lista" />
 
-  <!-- Filtros -->
-  <div class="mb-4">
-    <label for="dependencia" class="mr-2">Dependencia:</label>
-    <input
-      v-model="filtroDependencia"
-      type="text"
-      id="dependencia"
-      class="border p-2"
-      placeholder="Filtrar por Dependencia"
-    />
+        <!-- Filtros -->
+        <div class="mb-4">
+          <label for="dependencia" class="mr-2">Dependencia:</label>
+          <input
+            v-model="filtroDependencia"
+            type="text"
+            id="dependencia"
+            class="border p-2"
+            placeholder="Filtrar por Dependencia"
+          />
+
+          <label style="margin-left: 20px" for="asunto" class="mr-2">Asunto:</label>
+          <input
+            v-model="filtroAsunto"
+            type="text"
+            id="asunto"
+            class="border p-2"
+            placeholder="Filtrar por Asunto"
+          />
+        </div>
+
+        <div
+          class="bg-blue-500 mb-2 w-48 ml-3 rounded-lg hover:bg-blue-400 p-1 pl-3 text-gray-1000"
+        >
+          <router-link to="/solicitud-crear">Crear Solicitud</router-link>
+        </div>
+
+        <!-- Lista -->
+        <h2 class="text-4xl mb-4">Lista de Solicitudes</h2>
+        <table class="table-auto w-full text-left">
+          <thead>
+            <tr class="bg-blue-100">
+              <th>ID</th>
+              <th>Dependencia</th>
+              <th>Asunto</th>
+              <th>Fecha de Solicitud</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="solicitud in solicitudesFiltradas" :key="solicitud.IDSOLICITUD">
+              <td>{{ solicitud.IDSOLICITUD }}</td>
+              <td>{{ solicitud.DEPENDENCIA }}</td>
+              <td>{{ solicitud.ASUNTO }}</td>
+              <td>{{ solicitud.FECHADESOLICITUD }}</td>
+              <td>
+                <button
+                  @click="editarSolicitud(solicitud.IDSOLICITUD)"
+                  class="text-yellow-600 ml-4"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="size-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                    />
+                  </svg>
+                  Editar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </main>
+    </div>
   </div>
-
-  <div class="mb-4">
-    <label for="asunto" class="mr-2">Asunto:</label>
-    <input
-      v-model="filtroAsunto"
-      type="text"
-      id="asunto"
-      class="border p-2"
-      placeholder="Filtrar por Asunto"
-    />
-  </div>
-
-  <!-- Lista -->
-  <h2 class="text-2xl font-bold mb-4">Lista de Solicitudes</h2>
-  <table class="table-auto w-full text-left">
-    <thead>
-      <tr class="bg-blue-100">
-        <th>ID</th>
-        <th>Dependencia</th>
-        <th>Asunto</th>
-        <th>Fecha de Solicitud</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="solicitud in solicitudesFiltradas" :key="solicitud.IDSOLICITUD">
-        <td>{{ solicitud.IDSOLICITUD }}</td>
-        <td>{{ solicitud.DEPENDENCIA }}</td>
-        <td>{{ solicitud.ASUNTO }}</td>
-        <td>{{ solicitud.FECHADESOLICITUD }}</td>
-        <td>
-          <button @click="editarSolicitud(solicitud.IDSOLICITUD)" class="text-yellow-600 ml-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              class="size-6"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-              />
-            </svg>
-            Editar
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
 </template>
 
 <style scoped>

@@ -23,19 +23,35 @@ const agregarSolicitud = async () => {
   }
 
   try {
+    // Obtener el token del almacenamiento local o de donde lo tengas guardado
+    const token = localStorage.getItem('token') // Ajusta esta línea según tu método de almacenamiento
+
+    // Verificar si el token está disponible
+    if (!token) {
+      alert('No se encontró un token de autenticación. Por favor, inicie sesión nuevamente.')
+      return router.push({ name: 'login' }) // Redirigir al inicio de sesión si no hay token
+    }
+
+    // Realizar la solicitud con el token incluido en los encabezados
     const response = await fetch(
       'http://localhost/manejo_actas/index.php?accion=solicitud_crear_solicitud',
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` // Incluir el token en los encabezados
         },
         body: JSON.stringify(solicitudData)
       }
     )
 
     const result = await response.json()
-    alert(result.message)
+
+    if (response.ok) {
+      alert(result.message)
+    } else {
+      alert(`Error: ${result.message}`)
+    }
   } catch (error) {
     console.error('Error al enviar la solicitud:', error)
     alert('Hubo un problema al enviar la solicitud.')
@@ -44,66 +60,76 @@ const agregarSolicitud = async () => {
 </script>
 
 <template>
-  <BreadCrumb modulo="Solicitudes" accion="Crear" />
+  <div class="flex">
+    <div class="flex-grow">
+      <main class="p-6">
+        <BreadCrumb modulo="Solicitudes" accion="Crear" />
 
-  <h2 class="text-4xl font-bold text-blue-700">Nueva Solicitud</h2>
+        <h2 class="text-4xl font-bold text-blue-700">Nueva Solicitud</h2>
 
-  <div class="grid gap-6 mb-6 md:grid-cols-2">
-    <div>
-      <label for="dependencia" class="block mb-2 text-sm font-medium text-gray-900"
-        >Dependencia</label
-      >
-      <input
-        type="text"
-        id="dependencia"
-        v-model="dependencia"
-        class="input-field"
-        placeholder="Ingrese la dependencia"
-      />
-    </div>
-    <div>
-      <label for="asunto" class="block mb-2 text-sm font-medium text-gray-900">Asunto</label>
-      <input
-        type="text"
-        id="asunto"
-        v-model="asunto"
-        class="input-field"
-        placeholder="Ingrese el asunto"
-      />
-    </div>
-    <div>
-      <label for="decision" class="block mb-2 text-sm font-medium text-gray-900">Decisión</label>
-      <input
-        type="text"
-        id="decision"
-        v-model="decision"
-        class="input-field"
-        placeholder="Ingrese la decisión"
-      />
-    </div>
-    <div>
-      <label for="fecha" class="block mb-2 text-sm font-medium text-gray-900"
-        >Fecha de Solicitud</label
-      >
-      <input type="date" id="fecha" v-model="fechaDeSolicitud" class="input-field" />
-    </div>
-    <div>
-      <label for="solicitante" class="block mb-2 text-sm font-medium text-gray-900"
-        >ID del Solicitante</label
-      >
-      <input type="number" id="solicitante" v-model="solicitanteId" class="input-field" />
-    </div>
-    <div>
-      <label for="sesion" class="block mb-2 text-sm font-medium text-gray-900">ID de Sesión</label>
-      <input type="number" id="sesion" v-model="sesionId" class="input-field" />
-    </div>
-    <div>
-      <label for="descripcion" class="block mb-2 text-sm font-medium text-gray-900"
-        >ID de Descripción</label
-      >
-      <input type="number" id="descripcion" v-model="descripcionId" class="input-field" />
+        <div class="grid gap-6 mb-6 md:grid-cols-2">
+          <div>
+            <label for="dependencia" class="block mb-2 text-sm font-medium text-gray-900"
+              >Dependencia</label
+            >
+            <input
+              type="text"
+              id="dependencia"
+              v-model="dependencia"
+              class="input-field"
+              placeholder="Ingrese la dependencia"
+            />
+          </div>
+          <div>
+            <label for="asunto" class="block mb-2 text-sm font-medium text-gray-900">Asunto</label>
+            <input
+              type="text"
+              id="asunto"
+              v-model="asunto"
+              class="input-field"
+              placeholder="Ingrese el asunto"
+            />
+          </div>
+          <div>
+            <label for="decision" class="block mb-2 text-sm font-medium text-gray-900"
+              >Decisión</label
+            >
+            <input
+              type="text"
+              id="decision"
+              v-model="decision"
+              class="input-field"
+              placeholder="Ingrese la decisión"
+            />
+          </div>
+          <div>
+            <label for="fecha" class="block mb-2 text-sm font-medium text-gray-900"
+              >Fecha de Solicitud</label
+            >
+            <input type="date" id="fecha" v-model="fechaDeSolicitud" class="input-field" />
+          </div>
+          <div>
+            <label for="solicitante" class="block mb-2 text-sm font-medium text-gray-900"
+              >ID del Solicitante</label
+            >
+            <input type="number" id="solicitante" v-model="solicitanteId" class="input-field" />
+          </div>
+          <div>
+            <label for="sesion" class="block mb-2 text-sm font-medium text-gray-900"
+              >ID de Sesión</label
+            >
+            <input type="number" id="sesion" v-model="sesionId" class="input-field" />
+          </div>
+          <div>
+            <label for="descripcion" class="block mb-2 text-sm font-medium text-gray-900"
+              >ID de Descripción</label
+            >
+            <input type="number" id="descripcion" v-model="descripcionId" class="input-field" />
+          </div>
+        </div>
+
+        <button @click="agregarSolicitud" class="boton-1">Agregar Solicitud</button>
+      </main>
     </div>
   </div>
-
-  <button @click="agregarSolicitud" class="boton-1">Agregar Solicitud</button>
 </template>

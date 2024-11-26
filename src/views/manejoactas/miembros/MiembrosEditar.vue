@@ -52,22 +52,29 @@ const loadMiembro = async () => {
 // Función para actualizar el miembro en el servidor
 const updateMiembro = async () => {
   try {
+    const token = getToken() // Obtener el token
     const response = await axios.put(
       'http://localhost/manejo_actas/index.php?accion=miembro_actualizar_miembro',
       {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` // Agregar el token en el encabezado
-        },
+        // Cuerpo de la solicitud
         idMiembro: miembro.value.IDMIEMBRO,
         nombre: miembro.value.NOMBRE,
         cargo: miembro.value.CARGO
+      },
+      {
+        // Configuración de encabezados
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` // Pasar el token correctamente
+        }
       }
     )
-    router.push({ name: 'miembros-lista' })
-    if (response.ok) {
-      // Redirige a la lista de miembros
+
+    if (response.status === 200) {
+      // Redirige a la lista de miembros si la actualización fue exitosa
+      router.push({ name: 'miembros-lista' })
+    } else {
+      throw new Error('Error en la respuesta del servidor')
     }
   } catch (error) {
     console.error('Error updating member:', error)
@@ -80,37 +87,43 @@ onMounted(loadMiembro)
 </script>
 
 <template>
-  <BreadCrumb modulo="Miembros" accion="Editar" />
+  <div class="flex">
+    <div class="flex-grow">
+      <main class="p-6">
+        <BreadCrumb modulo="Miembros" accion="Editar" />
 
-  <h2 class="text-2xl font-bold mb-4">Editar Miembro</h2>
+        <h2 class="text-2xl font-bold mb-4">Editar Miembro</h2>
 
-  <div v-if="mensaje" class="mb-4 text-red-600">{{ mensaje }}</div>
+        <div v-if="mensaje" class="mb-4 text-red-600">{{ mensaje }}</div>
 
-  <div class="grid gap-4 mb-6">
-    <div>
-      <label for="nombre" class="block mb-1 text-sm font-medium text-gray-700">Nombre</label>
-      <input
-        v-model="miembro.NOMBRE"
-        type="text"
-        id="nombre"
-        class="input-field"
-        placeholder="Ingrese el nombre"
-      />
-    </div>
+        <div class="grid gap-4 mb-6">
+          <div>
+            <label for="nombre" class="block mb-1 text-sm font-medium text-gray-700">Nombre</label>
+            <input
+              v-model="miembro.NOMBRE"
+              type="text"
+              id="nombre"
+              class="input-field"
+              placeholder="Ingrese el nombre"
+            />
+          </div>
 
-    <div>
-      <label for="cargo" class="block mb-1 text-sm font-medium text-gray-700">Cargo</label>
-      <input
-        v-model="miembro.CARGO"
-        type="text"
-        id="cargo"
-        class="input-field"
-        placeholder="Ingrese el cargo"
-      />
+          <div>
+            <label for="cargo" class="block mb-1 text-sm font-medium text-gray-700">Cargo</label>
+            <input
+              v-model="miembro.CARGO"
+              type="text"
+              id="cargo"
+              class="input-field"
+              placeholder="Ingrese el cargo"
+            />
+          </div>
+        </div>
+
+        <button @click="updateMiembro" class="boton-1">Guardar Cambios</button>
+      </main>
     </div>
   </div>
-
-  <button @click="updateMiembro" class="boton-1">Guardar Cambios</button>
 </template>
 
 <style>
