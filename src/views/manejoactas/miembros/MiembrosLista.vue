@@ -1,9 +1,14 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import BreadCrumb from '../../../components/BreadCrumb.vue'
 
 const miembros = ref([]) // Usamos ref para la lista de miembros
+const filtro = ref({
+  campo: '', // El campo de búsqueda (ID, nombre, cargo)
+  valor: '' // El valor de búsqueda
+})
+
 const router = useRouter()
 
 // Variable para almacenar si el usuario tiene uno de los roles restringidos
@@ -77,6 +82,19 @@ const fetchUser = async (id) => {
   }
 }
 
+// Filtrar los miembros en base al campo y valor de búsqueda
+const miembrosFiltrados = computed(() => {
+  return miembros.value.filter((miembro) => {
+    const campo = filtro.value.campo
+    const valor = filtro.value.valor.toLowerCase()
+
+    if (!campo || !valor) return true // Si no hay filtro, mostrar todos
+
+    // Realizar la búsqueda en el campo seleccionado
+    return miembro[campo]?.toString().toLowerCase().includes(valor)
+  })
+})
+
 // Ver miembro
 const verMiembro = (id) => {
   router.push({ name: 'miembros-detalle', params: { id } })
@@ -130,6 +148,22 @@ onMounted(() => {
       <main class="p-6">
         <BreadCrumb modulo="Miembros" accion="Listar" />
 
+        <!-- Filtro de búsqueda -->
+        <div class="mb-4">
+          <select v-model="filtro.campo" class="p-2 border rounded-md mr-4">
+            <option value="">Selecciona un campo</option>
+            <option value="IDMIEMBRO">ID</option>
+            <option value="NOMBRE">Nombre</option>
+            <option value="CARGO">Cargo</option>
+          </select>
+          <input
+            v-model="filtro.valor"
+            type="text"
+            placeholder="Buscar..."
+            class="p-2 border rounded-md"
+          />
+        </div>
+
         <!-- Botón de crear miembro solo visible si no es "viewer" ni "user" -->
         <div
           v-if="!isViewerOrUser"
@@ -150,7 +184,7 @@ onMounted(() => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="miembro in miembros" :key="miembro.IDMIEMBRO" class="border-b">
+              <tr v-for="miembro in miembrosFiltrados" :key="miembro.IDMIEMBRO" class="border-b">
                 <td class="border-gray-300 p-2">{{ miembro.IDMIEMBRO }}</td>
                 <td class="border-gray-300 p-2">{{ miembro.NOMBRE }}</td>
                 <td class="border-gray-300 p-2">{{ miembro.CARGO }}</td>

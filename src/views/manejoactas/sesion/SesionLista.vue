@@ -1,10 +1,12 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import BreadCrumb from '../../../components/BreadCrumb.vue'
 
 const router = useRouter()
 const sesiones = ref([])
+const searchQuery = ref('')
+const searchField = ref('IDSESION')
 
 // Obtener el token del almacenamiento local
 const token = localStorage.getItem('token')
@@ -99,6 +101,13 @@ const eliminarSesion = (id) => {
     alert(`Sesión con ID ${id} eliminada`)
   }
 }
+
+// Función para filtrar las sesiones por el campo seleccionado
+const filteredSesiones = computed(() => {
+  return sesiones.value.filter((sesion) =>
+    sesion[searchField.value].toString().toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+})
 </script>
 
 <template>
@@ -107,6 +116,23 @@ const eliminarSesion = (id) => {
       <main class="p-6">
         <!-- Breadcrumb -->
         <BreadCrumb modulo="Sesion" accion="Lista" />
+
+        <!-- Formulario de búsqueda -->
+        <div class="mb-4 flex items-center gap-4">
+          <select v-model="searchField" class="border p-2 rounded">
+            <option value="IDSESION">ID</option>
+            <option value="LUGAR">Lugar</option>
+            <option value="PRESIDENTE">Presidente</option>
+            <option value="SECRETARIO">Secretario</option>
+          </select>
+
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Buscar..."
+            class="border p-2 rounded w-64"
+          />
+        </div>
 
         <!-- Botón de crear sesión solo visible si no es "viewer" ni "user" -->
         <div
@@ -132,7 +158,7 @@ const eliminarSesion = (id) => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="sesion in sesiones" :key="sesion.IDSESION" class="border-b">
+              <tr v-for="sesion in filteredSesiones" :key="sesion.IDSESION" class="border-b">
                 <td class="border-gray-300 p-2">{{ sesion.IDSESION }}</td>
                 <td class="border-gray-300 p-2">{{ sesion.LUGAR }}</td>
                 <td class="border-gray-300 p-2">{{ sesion.FECHA }}</td>
@@ -161,7 +187,6 @@ const eliminarSesion = (id) => {
                         d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                       />
                     </svg>
-
                     Ver
                   </button>
 
@@ -196,3 +221,29 @@ const eliminarSesion = (id) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Estilos para el formulario de búsqueda */
+input,
+select {
+  border: 1px solid #ddd;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+select {
+  width: 150px;
+}
+
+input {
+  width: 250px;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+</style>

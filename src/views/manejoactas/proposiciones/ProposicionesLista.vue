@@ -1,11 +1,13 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import BreadCrumb from '../../../components/BreadCrumb.vue'
 const router = useRouter()
 
 const proposiciones = ref([])
+const searchQuery = ref('')
+const searchField = ref('ID_PROPOSICIONES')
 
 // Función para obtener el token JWT desde el almacenamiento local
 function obtenerToken() {
@@ -50,6 +52,16 @@ const eliminarProposicion = (id) => {
     alert(`Proposición con ID ${id} eliminada`)
   }
 }
+
+// Función para filtrar las proposiciones por el campo seleccionado
+const filteredProposiciones = computed(() => {
+  return proposiciones.value.filter((proposicion) =>
+    proposicion[searchField.value]
+      .toString()
+      .toLowerCase()
+      .includes(searchQuery.value.toLowerCase())
+  )
+})
 </script>
 
 <template>
@@ -58,6 +70,25 @@ const eliminarProposicion = (id) => {
       <main class="p-6">
         <!-- Breadcrumb -->
         <BreadCrumb modulo="Proposiciones" accion="Lista" />
+
+        <!-- Formulario de búsqueda -->
+        <div class="mb-4 flex items-center gap-4">
+          <select v-model="searchField" class="border p-2 rounded">
+            <option value="ID_PROPOSICIONES">ID</option>
+            <option value="DESCRIPCION">Descripción</option>
+            <option value="DESICION">Decisión</option>
+            <option value="MIEMBRO_IDMIEMBRO">ID Miembro</option>
+            <option value="SESION_IDSESION">ID Sesión</option>
+          </select>
+
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Buscar..."
+            class="border p-2 rounded w-64"
+          />
+        </div>
+
         <div
           class="bg-blue-500 mb-2 w-48 ml-3 rounded-lg hover:bg-blue-400 p-1 pl-3 text-gray-1000"
         >
@@ -79,7 +110,7 @@ const eliminarProposicion = (id) => {
             </thead>
             <tbody>
               <tr
-                v-for="proposicion in proposiciones"
+                v-for="proposicion in filteredProposiciones"
                 :key="proposicion.ID_PROPOSICIONES"
                 class="border-b"
               >
@@ -119,3 +150,29 @@ const eliminarProposicion = (id) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Estilos para el formulario de búsqueda */
+input,
+select {
+  border: 1px solid #ddd;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+select {
+  width: 150px;
+}
+
+input {
+  width: 250px;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+</style>
