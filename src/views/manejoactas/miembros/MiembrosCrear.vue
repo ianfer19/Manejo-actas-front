@@ -2,7 +2,9 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import BreadCrumb from '../../../components/BreadCrumb.vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const nombre = ref('')
 const cargo = ref('')
 

@@ -89,42 +89,73 @@ onMounted(() => {
   loadProposicion()
 })
 </script>
-
 <template>
   <div class="flex">
     <div class="flex-grow">
       <main class="p-6">
         <BreadCrumb modulo="Proposiciones" accion="Editar" />
 
-        <h2 class="text-2xl font-bold">Editar Proposición</h2>
-        <div>
-          <label for="descripcion">Descripción</label>
-          <input type="text" v-model="proposicion.DESCRIPCION" />
+        <h2 class="text-2xl font-bold mb-4">Editar Proposición</h2>
+
+        <div class="mb-4">
+          <label for="descripcion" class="form-label">Descripción</label>
+          <textarea
+            v-model="proposicion.DESCRIPCION"
+            id="descripcion"
+            class="form-control"
+            rows="4"
+            placeholder="Escriba la descripción aquí"
+          ></textarea>
         </div>
-        <div>
-          <label for="decision">Decisión</label>
-          <input type="text" v-model="proposicion.DESICION" />
+
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <label for="decision" class="form-label">Decisión</label>
+            <input
+              type="text"
+              v-model="proposicion.DESICION"
+              id="decision"
+              class="form-control"
+              placeholder="Ingrese la decisión"
+            />
+          </div>
+          <div class="col-md-3">
+            <label for="miembroId" class="form-label">ID Miembro</label>
+            <input
+              type="number"
+              v-model="proposicion.MIEMBRO_IDMIEMBRO"
+              id="miembroId"
+              class="form-control"
+              placeholder="Ingrese el ID"
+            />
+          </div>
+          <div class="col-md-3">
+            <label for="sesionId" class="form-label">ID Sesión</label>
+            <input
+              type="number"
+              v-model="proposicion.SESION_IDSESION"
+              id="sesionId"
+              class="form-control"
+              placeholder="Ingrese el ID"
+            />
+          </div>
         </div>
-        <div>
-          <label for="miembroId">ID Miembro</label>
-          <input type="number" v-model="proposicion.MIEMBRO_IDMIEMBRO" />
-        </div>
-        <div>
-          <label for="sesionId">ID Sesión</label>
-          <input type="number" v-model="proposicion.SESION_IDSESION" />
-        </div>
-        <button @click="updateProposicion" class="boton-1">Guardar Cambios</button>
+
+        <button @click="updateProposicion" class="btn btn-primary">Guardar Cambios</button>
       </main>
     </div>
   </div>
 </template>
+
 <style>
-.input-field {
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 0.25rem;
-  width: 100%;
+.flex {
+  display: flex;
 }
+
+.flex-grow {
+  flex-grow: 1;
+}
+
 .boton-1 {
   background-color: #4caf50;
   color: white;
@@ -133,6 +164,7 @@ onMounted(() => {
   border-radius: 0.25rem;
   cursor: pointer;
 }
+
 .boton-1:hover {
   background-color: #45a049;
 }

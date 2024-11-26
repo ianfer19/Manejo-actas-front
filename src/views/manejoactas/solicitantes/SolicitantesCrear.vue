@@ -1,7 +1,9 @@
 <script setup>
 import BreadCrumb from '../../../components/BreadCrumb.vue'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const nombre = ref('')
 const tipoDeSolicitante = ref('')
 const email = ref('')
@@ -39,7 +41,7 @@ const agregarSolicitante = async () => {
     const result = await response.json()
 
     if (response.ok) {
-      router.push({ name: 'solicitudes-lista' })
+      router.push({ name: 'solicitantes-lista' })
     } else {
       alert(`Error al agregar solicitante: ${result.message}`)
     }
