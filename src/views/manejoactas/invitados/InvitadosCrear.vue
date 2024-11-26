@@ -1,16 +1,69 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import BreadCrumb from '../../../components/BreadCrumb.vue'
 import axios from 'axios' // Asegúrate de tener axios instalado y configurado
 import { useRouter } from 'vue-router'
+
 const router = useRouter()
 
 // Variables reactivas para los datos del invitado
 const nombre = ref('')
 const dependencia = ref('')
 const cargo = ref('')
+const isViewer = ref(false) // Variable para verificar si el rol es "viewer"
 
+// Función para obtener el token JWT desde el almacenamiento local
+function obtenerToken() {
+  return localStorage.getItem('token')
+}
+
+// Obtener el ID del usuario desde el token
+const getUserInfo = async () => {
+  const token = obtenerToken()
+  if (token) {
+    try {
+      const tokenParts = token.split('.')
+      if (tokenParts.length === 3) {
+        const decodedPayload = atob(tokenParts[1])
+        const decodedData = JSON.parse(decodedPayload)
+        const userId = decodedData.userId
+        await fetchUser(userId)
+      } else {
+        console.error('Token JWT no tiene el formato esperado.')
+      }
+    } catch (error) {
+      console.error('Error al decodificar el token', error)
+    }
+  }
+}
+
+// Obtener los datos del usuario desde la API
+const fetchUser = async (id) => {
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=user_obtener_usuario_por_id&id=${id}`
+    )
+    if (response.ok) {
+      const data = await response.json()
+      // Verificar si el rol es "viewer" o "user"
+      if (data.role === 'viewer' || data.role === 'user') {
+        isViewer.value = true
+      }
+    } else {
+      console.error('No se pudo obtener la información del usuario.')
+    }
+  } catch (error) {
+    console.error('Error al obtener la información del usuario:', error)
+  }
+}
+
+// Función para crear un invitado
 async function crearInvitado() {
+  if (isViewer.value) {
+    alert('No tienes permisos para crear un invitado.')
+    return
+  }
+
   // Objeto con los datos del invitado
   const nuevoInvitado = {
     nombre: nombre.value,
@@ -38,6 +91,11 @@ async function crearInvitado() {
     console.error('Error al crear el invitado:', error)
   }
 }
+
+// Obtiene la información del usuario al montar el componente
+onMounted(() => {
+  getUserInfo() // Obtiene la información del usuario y verifica el rol
+})
 </script>
 
 <template>
@@ -61,6 +119,7 @@ async function crearInvitado() {
               id="nombre"
               class="input-field"
               placeholder="Ingrese el nombre del invitado"
+              :disabled="isViewer"
             />
           </div>
           <div>
@@ -73,6 +132,7 @@ async function crearInvitado() {
               id="dependencia"
               class="input-field"
               placeholder="Dependencia del invitado"
+              :disabled="isViewer"
             />
           </div>
           <div>
@@ -83,11 +143,14 @@ async function crearInvitado() {
               id="cargo"
               class="input-field"
               placeholder="Cargo del invitado"
+              :disabled="isViewer"
             />
           </div>
         </div>
 
-        <button @click="crearInvitado" class="boton-1">Agregar Invitado</button>
+        <button @click="crearInvitado" class="boton-1" :disabled="isViewer">
+          Agregar Invitado
+        </button>
       </main>
     </div>
   </div>

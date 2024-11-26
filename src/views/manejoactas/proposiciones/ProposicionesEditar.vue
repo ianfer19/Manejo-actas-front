@@ -14,9 +14,51 @@ const proposicion = ref({
   SESION_IDSESION: null
 })
 
+const isViewer = ref(false) // Variable para verificar si el rol es "viewer"
+
 // Función para obtener el token JWT desde el almacenamiento local
 function obtenerToken() {
-  return localStorage.getItem('token') // O la fuente donde almacenes el token
+  return localStorage.getItem('token')
+}
+
+// Obtener el ID del usuario desde el token
+const getUserInfo = async () => {
+  const token = obtenerToken()
+  if (token) {
+    try {
+      const tokenParts = token.split('.')
+      if (tokenParts.length === 3) {
+        const decodedPayload = atob(tokenParts[1])
+        const decodedData = JSON.parse(decodedPayload)
+        const userId = decodedData.userId
+        await fetchUser(userId)
+      } else {
+        console.error('Token JWT no tiene el formato esperado.')
+      }
+    } catch (error) {
+      console.error('Error al decodificar el token', error)
+    }
+  }
+}
+
+// Obtener los datos del usuario desde la API
+const fetchUser = async (id) => {
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=user_obtener_usuario_por_id&id=${id}`
+    )
+    if (response.ok) {
+      const data = await response.json()
+      // Verificar si el rol es "viewer"
+      if (data.role === 'viewer') {
+        isViewer.value = true
+      }
+    } else {
+      console.error('No se pudo obtener la información del usuario.')
+    }
+  } catch (error) {
+    console.error('Error al obtener la información del usuario:', error)
+  }
 }
 
 // Cargar la proposición por ID
@@ -45,6 +87,11 @@ const loadProposicion = async () => {
 }
 
 const updateProposicion = async () => {
+  if (isViewer.value) {
+    alert('No tienes permisos para editar esta proposición.')
+    return
+  }
+
   try {
     const token = obtenerToken() // Obtener el token JWT
 
@@ -86,9 +133,11 @@ const updateProposicion = async () => {
 
 // Cargar la proposición al montar el componente
 onMounted(() => {
-  loadProposicion()
+  getUserInfo() // Obtiene la información del usuario y verifica el rol
+  loadProposicion() // Carga la proposición
 })
 </script>
+
 <template>
   <div class="flex">
     <div class="flex-grow">
@@ -97,65 +146,83 @@ onMounted(() => {
 
         <h2 class="text-2xl font-bold mb-4">Editar Proposición</h2>
 
-        <div class="mb-4">
-          <label for="descripcion" class="form-label">Descripción</label>
-          <textarea
-            v-model="proposicion.DESCRIPCION"
-            id="descripcion"
-            class="form-control"
-            rows="4"
-            placeholder="Escriba la descripción aquí"
-          ></textarea>
-        </div>
+        <div v-if="mensaje" class="mb-4 text-red-600">{{ mensaje }}</div>
 
-        <div class="row mb-4">
-          <div class="col-md-6">
-            <label for="decision" class="form-label">Decisión</label>
+        <div class="grid gap-4 mb-4">
+          <div>
+            <label for="descripcion" class="block mb-2 text-sm font-medium text-gray-900"
+              >Descripción</label
+            >
+            <textarea
+              v-model="proposicion.DESCRIPCION"
+              :disabled="isViewer"
+              class="input-field"
+            ></textarea>
+          </div>
+
+          <div>
+            <label for="decision" class="block mb-1 text-sm font-medium text-gray-700"
+              >Decisión</label
+            >
             <input
-              type="text"
               v-model="proposicion.DESICION"
+              type="text"
               id="decision"
-              class="form-control"
+              :disabled="isViewer"
+              class="input-field"
               placeholder="Ingrese la decisión"
             />
           </div>
-          <div class="col-md-3">
-            <label for="miembroId" class="form-label">ID Miembro</label>
+
+          <div>
+            <label for="miembroId" class="block mb-1 text-sm font-medium text-gray-700"
+              >ID Miembro</label
+            >
             <input
-              type="number"
               v-model="proposicion.MIEMBRO_IDMIEMBRO"
+              type="number"
               id="miembroId"
-              class="form-control"
-              placeholder="Ingrese el ID"
+              :disabled="isViewer"
+              class="input-field"
+              placeholder="Ingrese el ID del miembro"
             />
           </div>
-          <div class="col-md-3">
-            <label for="sesionId" class="form-label">ID Sesión</label>
+
+          <div>
+            <label for="sesionId" class="block mb-1 text-sm font-medium text-gray-700"
+              >ID Sesión</label
+            >
             <input
-              type="number"
               v-model="proposicion.SESION_IDSESION"
+              type="number"
               id="sesionId"
-              class="form-control"
-              placeholder="Ingrese el ID"
+              :disabled="isViewer"
+              class="input-field"
+              placeholder="Ingrese el ID de la sesión"
             />
           </div>
         </div>
 
-        <button @click="updateProposicion" class="btn btn-primary">Guardar Cambios</button>
+        <button @click="updateProposicion" :disabled="isViewer" class="boton-1">
+          Guardar Cambios
+        </button>
       </main>
     </div>
   </div>
 </template>
 
 <style>
-.flex {
-  display: flex;
+/* Estilo para los campos de entrada (input) */
+.input-field {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  width: 100%;
+  font-size: 1rem;
+  background-color: #fff;
 }
 
-.flex-grow {
-  flex-grow: 1;
-}
-
+/* Estilo para el botón */
 .boton-1 {
   background-color: #4caf50;
   color: white;
@@ -167,5 +234,58 @@ onMounted(() => {
 
 .boton-1:hover {
   background-color: #45a049;
+}
+
+/* Estilo para las etiquetas de los campos */
+label {
+  font-size: 0.875rem;
+  font-weight: medium;
+  color: #4a4a4a;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* Estilo para los mensajes de error */
+.text-red-600 {
+  color: #dc2626;
+}
+
+/* Estilo de la estructura flex */
+.flex {
+  display: flex;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
+/* Estilo para la estructura de la cuadrícula */
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.font-medium {
+  font-weight: 500;
 }
 </style>

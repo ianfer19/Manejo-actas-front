@@ -7,10 +7,51 @@ const route = useRoute()
 const router = useRouter()
 const acta = ref({}) // Contendrá los datos del acta
 const errorMessage = ref('') // Variable para almacenar el mensaje de error
+const isViewer = ref(false) // Variable para verificar si el rol es "viewer" o "user"
 
-// Función para obtener el token del localStorage
-const getToken = () => {
+// Función para obtener el token JWT desde el almacenamiento local
+function obtenerToken() {
   return localStorage.getItem('token')
+}
+
+// Obtener el ID del usuario desde el token
+const getUserInfo = async () => {
+  const token = obtenerToken()
+  if (token) {
+    try {
+      const tokenParts = token.split('.')
+      if (tokenParts.length === 3) {
+        const decodedPayload = atob(tokenParts[1])
+        const decodedData = JSON.parse(decodedPayload)
+        const userId = decodedData.userId
+        await fetchUser(userId)
+      } else {
+        console.error('Token JWT no tiene el formato esperado.')
+      }
+    } catch (error) {
+      console.error('Error al decodificar el token', error)
+    }
+  }
+}
+
+// Obtener los datos del usuario desde la API
+const fetchUser = async (id) => {
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=user_obtener_usuario_por_id&id=${id}`
+    )
+    if (response.ok) {
+      const data = await response.json()
+      // Verificar si el rol es "viewer" o "user"
+      if (data.role === 'viewer' || data.role === 'user') {
+        isViewer.value = true
+      }
+    } else {
+      console.error('No se pudo obtener la información del usuario.')
+    }
+  } catch (error) {
+    console.error('Error al obtener la información del usuario:', error)
+  }
 }
 
 // Función para cargar los datos del acta
@@ -19,7 +60,7 @@ const loadActa = async () => {
   console.log(numActa)
   errorMessage.value = '' // Reinicia el mensaje de error
   try {
-    const token = getToken()
+    const token = obtenerToken()
 
     const response = await fetch(
       `http://localhost/manejo_actas/index.php?accion=acta_obtener_acta_por_numero&numActa=${numActa}`,
@@ -45,9 +86,14 @@ const loadActa = async () => {
 
 // Función para actualizar el acta
 const actualizarActa = async () => {
+  if (isViewer.value) {
+    alert('No tienes permisos para editar esta acta.')
+    return
+  }
+
   const num = acta.value.NUM_ACTAS
   try {
-    const token = getToken()
+    const token = obtenerToken()
 
     const response = await fetch(
       'http://localhost/manejo_actas/index.php?accion=acta_actualizar_acta',
@@ -74,7 +120,10 @@ const actualizarActa = async () => {
 }
 
 // Carga los datos del acta al montar el componente
-onMounted(loadActa)
+onMounted(() => {
+  getUserInfo() // Obtiene la información del usuario y verifica el rol
+  loadActa() // Carga los datos del acta
+})
 </script>
 
 <template>
@@ -107,7 +156,13 @@ onMounted(loadActa)
           <div>
             <label for="estado" class="block mb-2 text-sm font-medium text-gray-700">Estado</label>
             <template v-if="acta.ESTADO !== 'FIRMADA'">
-              <select id="estado" v-model="acta.ESTADO" class="input-field" required>
+              <select
+                id="estado"
+                v-model="acta.ESTADO"
+                class="input-field"
+                required
+                :disabled="isViewer"
+              >
                 <option value="NO FIRMADA">NO FIRMADA</option>
                 <option value="FIRMADA">FIRMADA</option>
               </select>
@@ -134,6 +189,7 @@ onMounted(loadActa)
               v-model="acta.SESION_IDSESION"
               class="input-field"
               placeholder="ID de sesión"
+              :disabled="isViewer"
             />
           </div>
         </div>
@@ -141,6 +197,7 @@ onMounted(loadActa)
         <button
           @click="actualizarActa"
           class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+          :disabled="isViewer"
         >
           Actualizar Acta
         </button>

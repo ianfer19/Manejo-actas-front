@@ -5,7 +5,13 @@
         <div class="acta-detalle">
           <div class="boton-container">
             <button @click="generatePDF" class="btn-verde">Descargar PDF</button>
-            <button @click="abrirModalOrden" class="btn-verde">Agregar Orden del Día</button>
+            <button
+              v-if="userInfo && userInfo.role !== 'viewer'"
+              @click="abrirModalOrden"
+              class="btn-verde"
+            >
+              Agregar Orden del Día
+            </button>
           </div>
 
           <!-- Contenedor a convertir en PDF -->
@@ -179,12 +185,8 @@
     </div>
   </div>
 </template>
-
 <script>
-import html2pdf from 'html2pdf.js'
 import { useRoute } from 'vue-router'
-import plantillaInicio from '@/assets/plantillas/plantilla_inicio.png'
-import plantillaFin from '@/assets/plantillas/plantilla_fin.png'
 
 export default {
   name: 'ActaDetalle',
@@ -195,19 +197,22 @@ export default {
       proposiciones: [],
       miembrosAsistentes: [],
       invitadosAsistentes: [],
-      plantillaInicio: plantillaInicio,
-      plantillaFin: plantillaFin,
-      ordenDelDia: [], // Nuevos datos para el Orden del Día
+      ordenDelDia: [],
       nuevaOrden: {
-        DESCRIPCION: '' // Campo para nueva orden
+        DESCRIPCION: ''
       },
-      mostrarModalOrden: false
+      mostrarModalOrden: false,
+      userInfo: null // Para almacenar la información del usuario
     }
   },
   mounted() {
+    // Obtén la información del usuario al cargar el componente
+    this.getUserInfo()
+
     const route = useRoute()
     const numActa = route.params.id
     const token = localStorage.getItem('token')
+
     fetch(
       `http://localhost/manejo_actas/index.php?accion=acta_obtener_completa&numActa=${numActa}`,
       {
@@ -229,7 +234,8 @@ export default {
       .catch((error) => {
         console.error('Error al obtener los datos del acta:', error)
       })
-    // Obtener las órdenes del día relacionadas con el acta
+
+    // Obtener las órdenes del día
     fetch(
       `http://localhost/manejo_actas/index.php?accion=ordendia_obtener_ordenes_por_acta&actaNum=${numActa}`,
       {
@@ -243,7 +249,7 @@ export default {
       .then((response) => response.json())
       .then((data) => {
         if (Array.isArray(data)) {
-          this.ordenDelDia = data // Asignar las órdenes del día obtenidas
+          this.ordenDelDia = data
         } else {
           console.error('Error al obtener órdenes del día:', data.error)
         }
@@ -253,6 +259,43 @@ export default {
       })
   },
   methods: {
+    async getUserInfo() {
+      const token = localStorage.getItem('token')
+
+      if (token) {
+        try {
+          const tokenParts = token.split('.')
+
+          if (tokenParts.length === 3) {
+            const decodedPayload = atob(tokenParts[1])
+            const decodedData = JSON.parse(decodedPayload)
+            const userId = decodedData.userId
+            await this.fetchUser(userId)
+          } else {
+            console.error('Token JWT no tiene el formato esperado.')
+          }
+        } catch (error) {
+          console.error('Error al decodificar el token', error)
+        }
+      }
+    },
+
+    async fetchUser(id) {
+      try {
+        const response = await fetch(
+          `http://localhost/manejo_actas/index.php?accion=user_obtener_usuario_por_id&id=${id}`
+        )
+        if (response.ok) {
+          const data = await response.json()
+          this.userInfo = data // Asegúrate de que 'role' esté incluido en la respuesta
+        } else {
+          console.error('No se pudo obtener la información del usuario.')
+        }
+      } catch (error) {
+        console.error('Error al obtener la información del usuario:', error)
+      }
+    },
+
     generatePDF() {
       const element = this.$refs.pdfContent
       const options = {
@@ -269,14 +312,17 @@ export default {
     formatTime(time) {
       return time ? time.slice(0, 8) : ''
     },
+
     abrirModalOrden() {
       this.mostrarModalOrden = true
     },
+
     cerrarModalOrden() {
       this.mostrarModalOrden = false
       this.nuevaOrden.DESCRIPCION = ''
     },
-    agregarOrdenDia() {
+
+    async agregarOrdenDia() {
       const token = localStorage.getItem('token')
       fetch(`http://localhost/manejo_actas/index.php?accion=ordendia_crear_orden_dia`, {
         method: 'POST',

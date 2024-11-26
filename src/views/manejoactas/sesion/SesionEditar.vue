@@ -269,46 +269,46 @@ loadSesion()
         <div class="grid gap-6 mb-6 md:grid-cols-2">
           <div>
             <label for="lugar" class="block mb-2 text-sm font-medium text-gray-900">Lugar</label>
-            <input v-model="lugar" type="text" id="lugar" class="input-class" />
+            <input v-model="lugar" type="text" id="lugar" class="input-field" />
           </div>
           <div>
             <label for="fecha" class="block mb-2 text-sm font-medium text-gray-900">Fecha</label>
-            <input v-model="fecha" type="date" id="fecha" class="input-class" />
+            <input v-model="fecha" type="date" id="fecha" class="input-field" />
           </div>
           <div>
             <label for="horaInicio" class="block mb-2 text-sm font-medium text-gray-900"
               >Hora Inicio</label
             >
-            <input v-model="horaInicio" type="time" id="horaInicio" class="input-class" />
+            <input v-model="horaInicio" type="time" id="horaInicio" class="input-field" />
           </div>
           <div>
             <label for="horaFinal" class="block mb-2 text-sm font-medium text-gray-900"
               >Hora Final</label
             >
-            <input v-model="horaFinal" type="time" id="horaFinal" class="input-class" />
+            <input v-model="horaFinal" type="time" id="horaFinal" class="input-field" />
           </div>
           <div>
             <label for="presidente" class="block mb-2 text-sm font-medium text-gray-900"
               >Presidente</label
             >
-            <input v-model="presidente" type="text" id="presidente" class="input-class" />
+            <input v-model="presidente" type="text" id="presidente" class="input-field" />
           </div>
           <div>
             <label for="secretario" class="block mb-2 text-sm font-medium text-gray-900"
               >Secretario</label
             >
-            <input v-model="secretario" type="text" id="secretario" class="input-class" />
+            <input v-model="secretario" type="text" id="secretario" class="input-field" />
           </div>
         </div>
 
         <div class="my-6">
           <h3 class="mb-2 text-lg font-bold">Contenido de la Sesión</h3>
           <label for="tema" class="block mb-2 text-sm font-medium text-gray-900">Tema</label>
-          <input v-model="tema" type="text" id="tema" class="input-class" />
+          <input v-model="tema" type="text" id="tema" class="input-field" />
           <label for="contenido" class="block mb-2 text-sm font-medium text-gray-900"
             >Descripción</label
           >
-          <textarea v-model="contenido" id="contenido" class="input-class"></textarea>
+          <textarea v-model="contenido" id="contenido" class="input-field"></textarea>
         </div>
 
         <div class="my-6">
