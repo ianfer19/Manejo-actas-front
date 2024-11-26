@@ -12,8 +12,56 @@ const filtroId = ref('')
 const filtroNombre = ref('')
 const filtroTipo = ref('')
 
+// Variable para almacenar si el usuario tiene un rol restringido
+const isViewerOrUser = ref(false)
+
 // Obtener el token desde localStorage
 const token = localStorage.getItem('token')
+
+// Función para obtener el token del localStorage
+const getToken = () => {
+  return localStorage.getItem('token')
+}
+
+// Función para obtener el rol del usuario
+const getUserRole = async () => {
+  const token = getToken()
+  if (token) {
+    try {
+      const tokenParts = token.split('.')
+      if (tokenParts.length === 3) {
+        const decodedPayload = atob(tokenParts[1])
+        const decodedData = JSON.parse(decodedPayload)
+        const userId = decodedData.userId
+        await fetchUser(userId)
+      } else {
+        console.error('Token JWT no tiene el formato esperado.')
+      }
+    } catch (error) {
+      console.error('Error al decodificar el token', error)
+    }
+  }
+}
+
+// Obtener los datos del usuario desde la API para verificar el rol
+const fetchUser = async (id) => {
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=user_obtener_usuario_por_id&id=${id}`
+    )
+    if (response.ok) {
+      const data = await response.json()
+      // Verificar si el rol es "viewer" o "user"
+      if (data.role === 'viewer' || data.role === 'user') {
+        isViewerOrUser.value = true
+      }
+    } else {
+      console.error('No se pudo obtener la información del usuario.')
+    }
+  } catch (error) {
+    console.error('Error al obtener la información del usuario:', error)
+  }
+}
 
 // Función para obtener los solicitantes desde la API
 const obtenerSolicitantes = async () => {
@@ -32,9 +80,10 @@ const obtenerSolicitantes = async () => {
   }
 }
 
-// Cargar los solicitantes cuando el componente se monte
+// Cargar los solicitantes y verificar el rol cuando el componente se monte
 onMounted(() => {
   obtenerSolicitantes()
+  getUserRole()
 })
 
 // Filtrado computado para los solicitantes
@@ -59,11 +108,13 @@ const verSolicitante = (id) => {
 }
 
 const editarSolicitante = (id) => {
-  router.push({ name: 'solicitantes-editar', params: { id } })
+  if (!isViewerOrUser.value) {
+    router.push({ name: 'solicitantes-editar', params: { id } })
+  }
 }
 
 const eliminarSolicitante = async (id) => {
-  if (confirm('¿Estás seguro de que deseas eliminar este solicitante?')) {
+  if (!isViewerOrUser.value && confirm('¿Estás seguro de que deseas eliminar este solicitante?')) {
     try {
       await axios.delete(
         `http://localhost/manejo_actas/index.php?accion=solicitante_eliminar&idSolicitante=${id}`,
@@ -79,6 +130,8 @@ const eliminarSolicitante = async (id) => {
       console.error('Error al eliminar el solicitante:', error)
       alert('Ocurrió un error al intentar eliminar el solicitante.')
     }
+  } else {
+    alert('No tienes permisos para realizar esta acción.')
   }
 }
 </script>
@@ -120,6 +173,7 @@ const eliminarSolicitante = async (id) => {
         </div>
 
         <div
+          v-if="!isViewerOrUser"
           class="bg-blue-500 mb-2 w-48 ml-3 rounded-lg hover:bg-blue-400 p-1 pl-3 text-gray-1000"
         >
           <router-link to="/solicitantes-crear">Crear Solicitante</router-link>
@@ -153,6 +207,7 @@ const eliminarSolicitante = async (id) => {
                   <button
                     @click="editarSolicitante(solicitante.IDSOLICITANTE)"
                     class="text-yellow-600 ml-4"
+                    v-if="!isViewerOrUser"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

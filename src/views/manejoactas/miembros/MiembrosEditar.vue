@@ -6,6 +6,7 @@ import BreadCrumb from '../../../components/BreadCrumb.vue'
 
 const router = useRouter()
 const route = useRoute()
+
 // Función para obtener el token del localStorage
 const getToken = () => {
   return localStorage.getItem('token')
@@ -20,6 +21,47 @@ const miembro = ref({
 
 // Mensajes de estado
 const mensaje = ref('')
+const isViewer = ref(false) // Variable para verificar si el rol es "viewer"
+
+// Función para obtener los datos del usuario y verificar el rol
+const getUserInfo = async () => {
+  const token = getToken()
+  if (token) {
+    try {
+      const tokenParts = token.split('.')
+      if (tokenParts.length === 3) {
+        const decodedPayload = atob(tokenParts[1])
+        const decodedData = JSON.parse(decodedPayload)
+        const userId = decodedData.userId
+        await fetchUser(userId)
+      } else {
+        console.error('Token JWT no tiene el formato esperado.')
+      }
+    } catch (error) {
+      console.error('Error al decodificar el token', error)
+    }
+  }
+}
+
+// Obtener los datos del usuario desde la API
+const fetchUser = async (id) => {
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=user_obtener_usuario_por_id&id=${id}`
+    )
+    if (response.ok) {
+      const data = await response.json()
+      // Verificar si el rol es "viewer" o "user"
+      if (data.role === 'viewer' || data.role === 'user') {
+        isViewer.value = true
+      }
+    } else {
+      console.error('No se pudo obtener la información del usuario.')
+    }
+  } catch (error) {
+    console.error('Error al obtener la información del usuario:', error)
+  }
+}
 
 // Función para obtener el miembro desde la API
 const loadMiembro = async () => {
@@ -82,8 +124,11 @@ const updateMiembro = async () => {
   }
 }
 
-// Cargar datos del miembro al montar el componente
-onMounted(loadMiembro)
+// Cargar datos del miembro y verificar el rol al montar el componente
+onMounted(() => {
+  loadMiembro()
+  getUserInfo()
+})
 </script>
 
 <template>
@@ -105,6 +150,7 @@ onMounted(loadMiembro)
               id="nombre"
               class="input-field"
               placeholder="Ingrese el nombre"
+              :disabled="isViewer"
             />
           </div>
 
@@ -116,11 +162,13 @@ onMounted(loadMiembro)
               id="cargo"
               class="input-field"
               placeholder="Ingrese el cargo"
+              :disabled="isViewer"
             />
           </div>
         </div>
 
-        <button @click="updateMiembro" class="boton-1">Guardar Cambios</button>
+        <!-- El botón solo se muestra si no es un "viewer" ni "user" -->
+        <button @click="updateMiembro" class="boton-1" :disabled="isViewer">Guardar Cambios</button>
       </main>
     </div>
   </div>

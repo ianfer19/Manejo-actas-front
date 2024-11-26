@@ -186,7 +186,10 @@
   </div>
 </template>
 <script>
+import html2pdf from 'html2pdf.js'
 import { useRoute } from 'vue-router'
+import plantillaInicio from '@/assets/plantillas/plantilla_inicio.png'
+import plantillaFin from '@/assets/plantillas/plantilla_fin.png'
 
 export default {
   name: 'ActaDetalle',
@@ -198,6 +201,8 @@ export default {
       miembrosAsistentes: [],
       invitadosAsistentes: [],
       ordenDelDia: [],
+      plantillaInicio: plantillaInicio,
+      plantillaFin: plantillaFin,
       nuevaOrden: {
         DESCRIPCION: ''
       },

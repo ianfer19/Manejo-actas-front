@@ -7,8 +7,57 @@ const router = useRouter()
 
 const tareas = ref([])
 const token = localStorage.getItem('token')
+
 // Filtros
 const filtroDescripcion = ref('')
+
+// Variable para almacenar si el usuario tiene un rol restringido
+const isViewerOrUser = ref(false)
+
+// Función para obtener el token del localStorage
+const getToken = () => {
+  return localStorage.getItem('token')
+}
+
+// Función para obtener el rol del usuario
+const getUserRole = async () => {
+  const token = getToken()
+  if (token) {
+    try {
+      const tokenParts = token.split('.')
+      if (tokenParts.length === 3) {
+        const decodedPayload = atob(tokenParts[1])
+        const decodedData = JSON.parse(decodedPayload)
+        const userId = decodedData.userId
+        await fetchUser(userId)
+      } else {
+        console.error('Token JWT no tiene el formato esperado.')
+      }
+    } catch (error) {
+      console.error('Error al decodificar el token', error)
+    }
+  }
+}
+
+// Obtener los datos del usuario desde la API para verificar el rol
+const fetchUser = async (id) => {
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=user_obtener_usuario_por_id&id=${id}`
+    )
+    if (response.ok) {
+      const data = await response.json()
+      // Verificar si el rol es "viewer" o "user"
+      if (data.role === 'viewer' || data.role === 'user') {
+        isViewerOrUser.value = true
+      }
+    } else {
+      console.error('No se pudo obtener la información del usuario.')
+    }
+  } catch (error) {
+    console.error('Error al obtener la información del usuario:', error)
+  }
+}
 
 // Función para cargar las tareas desde el servidor
 const loadTareas = async () => {
@@ -48,17 +97,27 @@ const verTarea = (id) => {
 }
 
 const editarTarea = (id) => {
-  router.push({ name: 'tareas-editar', params: { id } })
-}
-
-const eliminarTarea = (id) => {
-  if (confirm('¿Estás seguro de que deseas eliminar esta solicitud?')) {
-    // Lógica para eliminar la solicitud (puedes implementar esto más adelante)
-    alert(`Solicitud con ID ${id} eliminada`)
+  if (!isViewerOrUser.value) {
+    router.push({ name: 'tareas-editar', params: { id } })
+  } else {
+    alert('No tienes permisos para editar esta tarea.')
   }
 }
 
-onMounted(loadTareas)
+const eliminarTarea = (id) => {
+  if (!isViewerOrUser.value && confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
+    // Lógica para eliminar la tarea (puedes implementar esto más adelante)
+    alert(`Tarea con ID ${id} eliminada`)
+  } else {
+    alert('No tienes permisos para realizar esta acción.')
+  }
+}
+
+// Cargar tareas y verificar el rol cuando el componente se monta
+onMounted(async () => {
+  await getUserRole() // Esperar que se termine de obtener el rol
+  loadTareas() // Luego cargar las tareas
+})
 </script>
 
 <template>
@@ -79,6 +138,7 @@ onMounted(loadTareas)
         </div>
 
         <div
+          v-if="!isViewerOrUser"
           class="bg-blue-500 mb-2 w-48 ml-3 rounded-lg hover:bg-blue-400 p-1 pl-3 text-gray-1000"
         >
           <router-link to="/tareas-crear">Crear Tarea</router-link>
@@ -103,7 +163,11 @@ onMounted(loadTareas)
               <td>{{ tarea.FECHA_ENTREGA }}</td>
               <td>{{ tarea.FECHA_VERIFICACION }}</td>
               <td>
-                <button @click="editarTarea(tarea.ID_TAREAS)" class="text-yellow-600">
+                <button
+                  v-if="!isViewerOrUser"
+                  @click="editarTarea(tarea.ID_TAREAS)"
+                  class="text-yellow-600"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"

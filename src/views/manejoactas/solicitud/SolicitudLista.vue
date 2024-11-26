@@ -12,6 +12,54 @@ const filtroDependencia = ref('')
 const filtroAsunto = ref('')
 const token = localStorage.getItem('token')
 
+// Variable para almacenar si el usuario tiene un rol restringido
+const isViewerOrUser = ref(false)
+
+// Función para obtener el token del localStorage
+const getToken = () => {
+  return localStorage.getItem('token')
+}
+
+// Función para obtener el rol del usuario
+const getUserRole = async () => {
+  const token = getToken()
+  if (token) {
+    try {
+      const tokenParts = token.split('.')
+      if (tokenParts.length === 3) {
+        const decodedPayload = atob(tokenParts[1])
+        const decodedData = JSON.parse(decodedPayload)
+        const userId = decodedData.userId
+        await fetchUser(userId)
+      } else {
+        console.error('Token JWT no tiene el formato esperado.')
+      }
+    } catch (error) {
+      console.error('Error al decodificar el token', error)
+    }
+  }
+}
+
+// Obtener los datos del usuario desde la API para verificar el rol
+const fetchUser = async (id) => {
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=user_obtener_usuario_por_id&id=${id}`
+    )
+    if (response.ok) {
+      const data = await response.json()
+      // Verificar si el rol es "viewer" o "user"
+      if (data.role === 'viewer' || data.role === 'user') {
+        isViewerOrUser.value = true
+      }
+    } else {
+      console.error('No se pudo obtener la información del usuario.')
+    }
+  } catch (error) {
+    console.error('Error al obtener la información del usuario:', error)
+  }
+}
+
 // Función para cargar las solicitudes desde la URL
 const loadSolicitudes = async () => {
   try {
@@ -56,17 +104,24 @@ const verSolicitud = (id) => {
 }
 
 const editarSolicitud = (id) => {
-  router.push({ name: 'solicitud-editar', params: { id } })
-}
-
-const eliminarSolicitud = (id) => {
-  if (confirm('¿Estás seguro de que deseas eliminar esta solicitud?')) {
-    // Lógica para eliminar la solicitud (puedes implementar esto más adelante)
-    alert(`Solicitud con ID ${id} eliminada`)
+  if (!isViewerOrUser.value) {
+    router.push({ name: 'solicitud-editar', params: { id } })
   }
 }
 
-onMounted(loadSolicitudes)
+const eliminarSolicitud = (id) => {
+  if (!isViewerOrUser.value && confirm('¿Estás seguro de que deseas eliminar esta solicitud?')) {
+    // Lógica para eliminar la solicitud (puedes implementar esto más adelante)
+    alert(`Solicitud con ID ${id} eliminada`)
+  } else {
+    alert('No tienes permisos para realizar esta acción.')
+  }
+}
+
+onMounted(async () => {
+  await getUserRole() // Esperar que se termine de obtener el rol
+  loadSolicitudes() // Luego cargar las solicitudes
+})
 </script>
 
 <template>
@@ -96,7 +151,9 @@ onMounted(loadSolicitudes)
           />
         </div>
 
+        <!-- Mostrar botón de Crear solicitud solo si el usuario no tiene rol restringido -->
         <div
+          v-if="!isViewerOrUser"
           class="bg-blue-500 mb-2 w-48 ml-3 rounded-lg hover:bg-blue-400 p-1 pl-3 text-gray-1000"
         >
           <router-link to="/solicitud-crear">Crear Solicitud</router-link>
@@ -122,6 +179,7 @@ onMounted(loadSolicitudes)
               <td>{{ solicitud.FECHADESOLICITUD }}</td>
               <td>
                 <button
+                  v-if="!isViewerOrUser"
                   @click="editarSolicitud(solicitud.IDSOLICITUD)"
                   class="text-yellow-600 ml-4"
                 >

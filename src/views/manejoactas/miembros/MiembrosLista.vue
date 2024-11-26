@@ -6,11 +6,15 @@ import BreadCrumb from '../../../components/BreadCrumb.vue'
 const miembros = ref([]) // Usamos ref para la lista de miembros
 const router = useRouter()
 
+// Variable para almacenar si el usuario tiene uno de los roles restringidos
+const isViewerOrUser = ref(false)
+
 // Función para obtener el token del localStorage
 const getToken = () => {
   return localStorage.getItem('token')
 }
 
+// Función para cargar los miembros
 async function cargarMiembros() {
   try {
     const token = getToken() // Obtener el token
@@ -33,14 +37,57 @@ async function cargarMiembros() {
   }
 }
 
+// Función para obtener el rol del usuario y verificar si es "viewer" o "user"
+const getUserRole = async () => {
+  const token = getToken()
+  if (token) {
+    try {
+      const tokenParts = token.split('.')
+      if (tokenParts.length === 3) {
+        const decodedPayload = atob(tokenParts[1])
+        const decodedData = JSON.parse(decodedPayload)
+        const userId = decodedData.userId
+        await fetchUser(userId)
+      } else {
+        console.error('Token JWT no tiene el formato esperado.')
+      }
+    } catch (error) {
+      console.error('Error al decodificar el token', error)
+    }
+  }
+}
+
+// Obtener los datos del usuario desde la API para verificar el rol
+const fetchUser = async (id) => {
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=user_obtener_usuario_por_id&id=${id}`
+    )
+    if (response.ok) {
+      const data = await response.json()
+      // Verificar si el rol es "viewer" o "user"
+      if (data.role === 'viewer' || data.role === 'user') {
+        isViewerOrUser.value = true
+      }
+    } else {
+      console.error('No se pudo obtener la información del usuario.')
+    }
+  } catch (error) {
+    console.error('Error al obtener la información del usuario:', error)
+  }
+}
+
+// Ver miembro
 const verMiembro = (id) => {
   router.push({ name: 'miembros-detalle', params: { id } })
 }
 
+// Editar miembro
 const editarMiembro = (id) => {
   router.push({ name: 'miembros-editar', params: { id } })
 }
 
+// Eliminar miembro
 const eliminarMiembro = async (id) => {
   if (confirm('¿Estás seguro de que deseas eliminar este miembro?')) {
     try {
@@ -73,6 +120,7 @@ const eliminarMiembro = async (id) => {
 
 onMounted(() => {
   cargarMiembros()
+  getUserRole() // Verificar el rol del usuario al montar el componente
 })
 </script>
 
@@ -82,7 +130,9 @@ onMounted(() => {
       <main class="p-6">
         <BreadCrumb modulo="Miembros" accion="Listar" />
 
+        <!-- Botón de crear miembro solo visible si no es "viewer" ni "user" -->
         <div
+          v-if="!isViewerOrUser"
           class="bg-blue-500 mb-2 w-48 ml-3 rounded-lg hover:bg-blue-400 p-1 pl-3 text-gray-1000"
         >
           <router-link to="/miembros-crear">Crear Miembro</router-link>
@@ -105,7 +155,12 @@ onMounted(() => {
                 <td class="border-gray-300 p-2">{{ miembro.NOMBRE }}</td>
                 <td class="border-gray-300 p-2">{{ miembro.CARGO }}</td>
                 <td class="border-gray-300 p-2">
-                  <button @click="editarMiembro(miembro.IDMIEMBRO)" class="text-yellow-600 ml-4">
+                  <!-- Botón de editar solo visible si no es "viewer" ni "user" -->
+                  <button
+                    v-if="!isViewerOrUser"
+                    @click="editarMiembro(miembro.IDMIEMBRO)"
+                    class="text-yellow-600 ml-4"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"

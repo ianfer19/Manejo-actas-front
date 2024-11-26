@@ -148,9 +148,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <button @click="crearInvitado" class="boton-1" :disabled="isViewer">
-          Agregar Invitado
-        </button>
+        <button @click="crearInvitado" class="boton-1" v-if="!isViewer">Agregar Invitado</button>
       </main>
     </div>
   </div>

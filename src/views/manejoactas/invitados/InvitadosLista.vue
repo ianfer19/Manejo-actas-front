@@ -10,6 +10,9 @@ const router = useRouter()
 const filtroId = ref('')
 const filtroNombre = ref('')
 
+// Variable para almacenar el rol del usuario
+const isViewerOrUser = ref(false)
+
 // Función para obtener el token del localStorage
 const getToken = () => {
   return localStorage.getItem('token')
@@ -34,6 +37,46 @@ async function cargarInvitados() {
     invitados.value = await response.json()
   } catch (error) {
     console.error('Error:', error)
+  }
+}
+
+// Función para obtener el rol del usuario y verificar si es "viewer" o "user"
+const getUserRole = async () => {
+  const token = getToken()
+  if (token) {
+    try {
+      const tokenParts = token.split('.')
+      if (tokenParts.length === 3) {
+        const decodedPayload = atob(tokenParts[1])
+        const decodedData = JSON.parse(decodedPayload)
+        const userId = decodedData.userId
+        await fetchUser(userId)
+      } else {
+        console.error('Token JWT no tiene el formato esperado.')
+      }
+    } catch (error) {
+      console.error('Error al decodificar el token', error)
+    }
+  }
+}
+
+// Obtener los datos del usuario desde la API para verificar el rol
+const fetchUser = async (id) => {
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=user_obtener_usuario_por_id&id=${id}`
+    )
+    if (response.ok) {
+      const data = await response.json()
+      // Verificar si el rol es "viewer" o "user"
+      if (data.role === 'viewer' || data.role === 'user') {
+        isViewerOrUser.value = true
+      }
+    } else {
+      console.error('No se pudo obtener la información del usuario.')
+    }
+  } catch (error) {
+    console.error('Error al obtener la información del usuario:', error)
   }
 }
 
@@ -86,6 +129,7 @@ async function eliminarInvitado(id) {
 
 onMounted(() => {
   cargarInvitados()
+  getUserRole() // Verificar el rol del usuario al montar el componente
 })
 </script>
 
@@ -94,7 +138,9 @@ onMounted(() => {
     <div class="flex-grow">
       <main class="p-6">
         <BreadCrumb modulo="Invitados" accion="Listar" />
+        <!-- Botón de crear invitado solo visible si no es "viewer" ni "user" -->
         <div
+          v-if="!isViewerOrUser"
           class="bg-blue-500 mb-2 w-48 ml-3 rounded-lg hover:bg-blue-400 p-1 pl-3 text-gray-1000"
         >
           <router-link to="/invitados-crear">Crear Invitado</router-link>
@@ -149,7 +195,9 @@ onMounted(() => {
                 <td class="px-6 py-4">{{ invitado.DEPENDENCIA }}</td>
                 <td class="px-6 py-4">{{ invitado.CARGO }}</td>
                 <td class="px-6 py-4">
+                  <!-- Botón de editar solo visible si no es "viewer" ni "user" -->
                   <button
+                    v-if="!isViewerOrUser"
                     @click="editarInvitado(invitado.IDINVITADOS)"
                     class="text-yellow-600 ml-4"
                   >

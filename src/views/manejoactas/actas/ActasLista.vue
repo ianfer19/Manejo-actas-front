@@ -11,6 +11,54 @@ const actas = ref([]) // Almacena las actas obtenidas de la API
 const filtroSesion = ref('') // Filtrar por ID de sesión
 const filtroEstado = ref('') // Filtrar por estado (firmada/no firmada)
 
+// Variable para almacenar si el usuario tiene un rol restringido
+const isViewerOrUser = ref(false)
+
+// Función para obtener el token del localStorage
+const getToken = () => {
+  return localStorage.getItem('token')
+}
+
+// Función para obtener el rol del usuario
+const getUserRole = async () => {
+  const token = getToken()
+  if (token) {
+    try {
+      const tokenParts = token.split('.')
+      if (tokenParts.length === 3) {
+        const decodedPayload = atob(tokenParts[1])
+        const decodedData = JSON.parse(decodedPayload)
+        const userId = decodedData.userId
+        await fetchUser(userId)
+      } else {
+        console.error('Token JWT no tiene el formato esperado.')
+      }
+    } catch (error) {
+      console.error('Error al decodificar el token', error)
+    }
+  }
+}
+
+// Obtener los datos del usuario desde la API para verificar el rol
+const fetchUser = async (id) => {
+  try {
+    const response = await fetch(
+      `http://localhost/manejo_actas/index.php?accion=user_obtener_usuario_por_id&id=${id}`
+    )
+    if (response.ok) {
+      const data = await response.json()
+      // Verificar si el rol es "viewer" o "user"
+      if (data.role === 'viewer' || data.role === 'user') {
+        isViewerOrUser.value = true
+      }
+    } else {
+      console.error('No se pudo obtener la información del usuario.')
+    }
+  } catch (error) {
+    console.error('Error al obtener la información del usuario:', error)
+  }
+}
+
 // Propiedad computada para las actas filtradas
 const actasFiltradas = computed(() => {
   return actas.value.filter((acta) => {
@@ -26,12 +74,26 @@ const actasFiltradas = computed(() => {
 
 // Navegación a editar acta
 const editarActa = (id) => {
-  router.push({ name: 'acta-editar', params: { id } })
+  if (!isViewerOrUser.value) {
+    router.push({ name: 'acta-editar', params: { id } })
+  } else {
+    alert('No tienes permisos para editar esta acta.')
+  }
 }
 
 // Navegación a detalles de acta
 const verActa = (id) => {
   router.push({ name: 'acta-detalle', params: { id } })
+}
+
+// Función para eliminar acta
+const eliminarActa = (numActa) => {
+  if (!isViewerOrUser.value && confirm('¿Estás seguro de que deseas eliminar esta acta?')) {
+    // Lógica para eliminar la acta (puedes implementar esto más adelante)
+    alert(`Acta con Número ${numActa} eliminada`)
+  } else {
+    alert('No tienes permisos para realizar esta acción.')
+  }
 }
 
 // Función para obtener actas desde la API
@@ -60,16 +122,10 @@ const obtenerActas = async () => {
   }
 }
 
-// Función para eliminar acta
-const eliminarActa = (numActa) => {
-  if (confirm('¿Estás seguro de que deseas eliminar esta acta?')) {
-    alert(`Acta con Número ${numActa} eliminada`) // Implementa la funcionalidad real aquí
-  }
-}
-
 // Cargar actas al montar el componente
-onMounted(() => {
-  obtenerActas()
+onMounted(async () => {
+  await getUserRole() // Esperar que se termine de obtener el rol
+  obtenerActas() // Luego cargar las actas
 })
 </script>
 
@@ -144,7 +200,11 @@ onMounted(() => {
 
                     Ver
                   </button>
-                  <button @click="editarActa(acta.NUM_ACTAS)" class="text-yellow-600 ml-4">
+                  <button
+                    v-if="!isViewerOrUser"
+                    @click="editarActa(acta.NUM_ACTAS)"
+                    class="text-yellow-600 ml-4"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
