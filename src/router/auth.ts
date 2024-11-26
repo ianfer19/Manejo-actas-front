@@ -6,14 +6,12 @@ const authRoutes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     name: 'Login',
-    component: Login,
-    meta: { requiresAuth: false }
+    component: Login
   },
   {
     path: '/register',
     name: 'Register',
-    component: Register,
-    meta: { requiresAuth: false }
+    component: Register
   }
 ]
 
