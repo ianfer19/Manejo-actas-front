@@ -1,6 +1,9 @@
 <script setup>
 import BreadCrumb from '../../../components/BreadCrumb.vue'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const dependencia = ref('')
 const asunto = ref('')
@@ -23,23 +26,20 @@ const agregarSolicitud = async () => {
   }
 
   try {
-    // Obtener el token del almacenamiento local o de donde lo tengas guardado
-    const token = localStorage.getItem('token') // Ajusta esta línea según tu método de almacenamiento
+    const token = localStorage.getItem('token')
 
-    // Verificar si el token está disponible
     if (!token) {
       alert('No se encontró un token de autenticación. Por favor, inicie sesión nuevamente.')
       return router.push({ name: 'login' }) // Redirigir al inicio de sesión si no hay token
     }
 
-    // Realizar la solicitud con el token incluido en los encabezados
     const response = await fetch(
       'http://localhost/manejo_actas/index.php?accion=solicitud_crear_solicitud',
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` // Incluir el token en los encabezados
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(solicitudData)
       }
@@ -48,7 +48,7 @@ const agregarSolicitud = async () => {
     const result = await response.json()
 
     if (response.ok) {
-      alert(result.message)
+      router.push({ name: 'solicitud-lista' }) // Redirigir si la solicitud es exitosa
     } else {
       alert(`Error: ${result.message}`)
     }

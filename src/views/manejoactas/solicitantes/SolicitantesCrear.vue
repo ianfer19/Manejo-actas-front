@@ -39,7 +39,7 @@ const agregarSolicitante = async () => {
     const result = await response.json()
 
     if (response.ok) {
-      router.push({ name: 'solicitantes-lista' })
+      router.push({ name: 'solicitudes-lista' })
     } else {
       alert(`Error al agregar solicitante: ${result.message}`)
     }
