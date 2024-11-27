@@ -49,7 +49,7 @@ const updateSolicitante = async () => {
   const id = route.params.id // Obtener el ID desde la ruta
   try {
     const response = await fetch(
-      `http://localhost/manejo_actas/index.php?accion=actualizar_solicitante`,
+      `http://localhost/manejo_actas/index.php?accion=solicitante_actualizar_solicitante`,
       {
         method: 'PUT',
         headers: {
@@ -88,25 +88,27 @@ const updateSolicitante = async () => {
 
         <div>
           <label for="nombre">Nombre</label>
-          <input type="text" v-model="solicitante.NOMBRE" />
+          <input class="input-field" type="text" v-model="solicitante.NOMBRE" />
         </div>
 
         <div>
           <label for="tipo">Tipo de Solicitante</label>
-          <input type="text" v-model="solicitante.TIPODESOLICITANTE" />
+          <input class="input-field" type="text" v-model="solicitante.TIPODESOLICITANTE" />
         </div>
 
         <div>
           <label for="email">Email</label>
-          <input type="email" v-model="solicitante.EMAIL" />
+          <input class="input-field" type="email" v-model="solicitante.EMAIL" />
         </div>
 
         <div>
           <label for="celular">Celular</label>
-          <input type="text" v-model="solicitante.CELULAR" />
+          <input class="input-field" type="text" v-model="solicitante.CELULAR" />
         </div>
 
-        <button @click="updateSolicitante" class="boton-1">Guardar Cambios</button>
+        <button style="margin-top: 20px" @click="updateSolicitante" class="boton-1">
+          Guardar Cambios
+        </button>
       </main>
     </div>
   </div>

@@ -3,14 +3,17 @@ import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import BreadCrumb from '../../../components/BreadCrumb.vue'
+
 const router = useRouter()
 
 // Estado para almacenar los solicitantes
 const solicitantes = ref([])
-// Filtros
-const filtroId = ref('')
-const filtroNombre = ref('')
-const filtroTipo = ref('')
+
+// Estado para el filtro (campo y valor)
+const filtro = ref({
+  campo: '', // Campo seleccionado para filtrar
+  valor: '' // Valor del filtro
+})
 
 // Variable para almacenar si el usuario tiene un rol restringido
 const isViewerOrUser = ref(false)
@@ -88,21 +91,17 @@ onMounted(() => {
 
 // Filtrado computado para los solicitantes
 const solicitantesFiltrados = computed(() => {
-  return solicitantes.value.filter((solicitante) => {
-    const idValido = filtroId.value
-      ? solicitante.IDSOLICITANTE.toString().includes(filtroId.value)
-      : true
-    const nombreValido = filtroNombre.value
-      ? solicitante.NOMBRE.toLowerCase().includes(filtroNombre.value.toLowerCase())
-      : true
-    const tipoValido = filtroTipo.value
-      ? solicitante.TIPODESOLICITANTE.toLowerCase().includes(filtroTipo.value.toLowerCase())
-      : true
+  const campo = filtro.value.campo
+  const valor = filtro.value.valor.toLowerCase()
 
-    return idValido && nombreValido && tipoValido
-  })
+  if (!campo || !valor) return solicitantes.value
+
+  return solicitantes.value.filter((solicitante) =>
+    solicitante[campo]?.toString().toLowerCase().includes(valor)
+  )
 })
 
+// Funciones para acciones de los solicitantes
 const verSolicitante = (id) => {
   router.push({ name: 'solicitantes-detalle', params: { id } })
 }
@@ -142,72 +141,53 @@ const eliminarSolicitante = async (id) => {
       <main class="p-6">
         <!-- Breadcrumb -->
         <BreadCrumb modulo="Solicitante" accion="Lista" />
-        <div class="mb-4">
-          <!-- Filtros -->
-          <label for="id" class="mr-2">ID:</label>
-          <input
-            v-model="filtroId"
-            type="text"
-            id="id"
-            class="border p-2"
-            placeholder="Filtrar por ID"
-          />
 
-          <label for="nombre" class="ml-4 mr-2">Nombre:</label>
-          <input
-            v-model="filtroNombre"
-            type="text"
-            id="nombre"
-            class="border p-2"
-            placeholder="Filtrar por Nombre"
-          />
+        <!-- Filtro -->
+        <div class="mb-4 flex items-center gap-4">
+          <label for="campo" class="mr-2">Filtrar por:</label>
+          <select v-model="filtro.campo" id="campo" class="border p-2">
+            <option value="">Seleccionar campo</option>
+            <option value="IDSOLICITANTE">ID</option>
+            <option value="NOMBRE">Nombre</option>
+            <option value="TIPODESOLICITANTE">Tipo de Solicitante</option>
+          </select>
 
-          <label for="tipo" class="ml-4 mr-2">Tipo de Solicitante:</label>
+          <label for="valor" class="ml-4 mr-2">Valor:</label>
           <input
-            v-model="filtroTipo"
+            v-model="filtro.valor"
             type="text"
-            id="tipo"
+            id="valor"
             class="border p-2"
-            placeholder="Filtrar por Tipo de Solicitante"
+            placeholder="Ingrese valor para filtrar"
           />
         </div>
 
-        <div
-          v-if="!isViewerOrUser"
-          class="bg-blue-500 mb-2 w-48 ml-3 rounded-lg hover:bg-blue-400 p-1 pl-3 text-gray-1000"
-        >
-          <router-link to="/solicitantes-crear">Crear Solicitante</router-link>
-        </div>
-
+        <!-- Lista de Solicitantes -->
         <div class="overflow-x-auto">
           <h2 class="text-4xl mb-4">Lista de Solicitantes</h2>
           <table class="w-full text-sm text-left text-gray-500">
             <thead class="text-xs text-gray-700 uppercase bg-blue-100">
               <tr>
-                <th class="border-gray-300 p-2">ID</th>
-                <th class="border-gray-300 p-2">Nombre</th>
-                <th class="border-gray-300 p-2">Tipo de Solicitante</th>
-                <th class="border-gray-300 p-2">Email</th>
-                <th class="border-gray-300 p-2">Celular</th>
-                <th class="border-gray-300 p-2">Acciones</th>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Tipo de Solicitante</th>
+                <th>Email</th>
+                <th>Celular</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="solicitante in solicitantesFiltrados"
-                :key="solicitante.IDSOLICITANTE"
-                class="border-b"
-              >
-                <td class="border-gray-300 p-2">{{ solicitante.IDSOLICITANTE }}</td>
-                <td class="border-gray-300 p-2">{{ solicitante.NOMBRE }}</td>
-                <td class="border-gray-300 p-2">{{ solicitante.TIPODESOLICITANTE }}</td>
-                <td class="border-gray-300 p-2">{{ solicitante.EMAIL }}</td>
-                <td class="border-gray-300 p-2">{{ solicitante.CELULAR }}</td>
-                <td class="border-gray-300 p-2">
+              <tr v-for="solicitante in solicitantesFiltrados" :key="solicitante.IDSOLICITANTE">
+                <td>{{ solicitante.IDSOLICITANTE }}</td>
+                <td>{{ solicitante.NOMBRE }}</td>
+                <td>{{ solicitante.TIPODESOLICITANTE }}</td>
+                <td>{{ solicitante.EMAIL }}</td>
+                <td>{{ solicitante.CELULAR }}</td>
+                <td>
                   <button
+                    v-if="!isViewerOrUser"
                     @click="editarSolicitante(solicitante.IDSOLICITANTE)"
                     class="text-yellow-600 ml-4"
-                    v-if="!isViewerOrUser"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
